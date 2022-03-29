@@ -12,12 +12,32 @@
  * along with game-testbed. If not, see <https://www.gnu.org/licenses/>.
  */
 
+use super::world::*;
+
+pub trait Component {
+    fn get_host_vec(world: &mut World) -> &mut Vec<Option<Self>>
+    where
+        Self: Sized;
+}
+
 pub struct Position {
     pub x: f32,
     pub y: f32,
 }
 
+impl Component for Position {
+    fn get_host_vec(world: &mut World) -> &mut Vec<Option<Position>> {
+        &mut world.positions
+    }
+}
+
 pub struct Velocity {
     pub x: f32,
     pub y: f32,
+}
+
+impl Component for Velocity {
+    fn get_host_vec(world: &mut World) -> &mut Vec<Option<Velocity>> {
+        &mut world.velocities
+    }
 }

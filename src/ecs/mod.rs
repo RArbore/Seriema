@@ -13,5 +13,7 @@
  */
 
 mod components;
+mod world;
 
 pub use components::*;
+pub use world::*;

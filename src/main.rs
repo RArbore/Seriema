@@ -14,4 +14,11 @@
 
 mod ecs;
 
-fn main() {}
+fn main() {
+    let mut world = ecs::World::new();
+    let entity = world.add();
+    world.insert(entity, ecs::Position { x: 0.0, y: 0.0 });
+    println!("world size: {}", world.size);
+    let p = world.positions[0].as_ref().unwrap();
+    println!("entity position: {} {}", p.x, p.y);
+}
