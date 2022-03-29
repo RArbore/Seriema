@@ -16,7 +16,6 @@ use super::components::*;
 
 pub struct Entity {
     index: usize,
-    generation: usize,
 }
 
 pub struct World {
@@ -37,10 +36,7 @@ impl World {
     pub fn add(&mut self) -> Entity {
         self.positions.push(None);
         self.velocities.push(None);
-        let entity = Entity {
-            index: self.size,
-            generation: 0,
-        };
+        let entity = Entity { index: self.size };
         self.size += 1;
         entity
     }
@@ -48,5 +44,17 @@ impl World {
     pub fn insert<T: Component>(&mut self, entity: Entity, component: T) {
         let vec = T::get_host_vec(self);
         vec[entity.index] = Some(component);
+    }
+
+    pub fn at(&self, entity: Entity) -> Vec<&dyn Component> {
+        let mut vec: Vec<&dyn Component> = vec![];
+        add_if(self.positions[entity.index].as_ref(), &mut vec);
+        vec
+    }
+}
+
+fn add_if<'a, T: Component>(option: Option<&'a T>, vec: &mut Vec<&'a dyn Component>) {
+    if let Some(r) = option {
+        vec.push(r);
     }
 }
