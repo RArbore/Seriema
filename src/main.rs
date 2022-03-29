@@ -1,37 +1,44 @@
 use bevy::prelude::*;
 
 #[derive(Component)]
-struct Position {
-    x: f32,
-    y: f32,
-}
-
-#[derive(Component)]
 struct Velocity {
     x: f32,
     y: f32,
 }
 
-fn add_player(mut commands: Commands) {
+fn initialize_entities(mut commands: Commands) {
     commands
-        .spawn()
-        .insert(Position { x: 0.0, y: 0.0 })
-        .insert(Velocity { x: 1.0, y: 1.0 });
+        .spawn_bundle(SpriteBundle {
+            sprite: Sprite {
+                color: Color::rgb(0.2, 0.2, 0.2),
+                ..Default::default()
+            },
+            transform: Transform {
+                scale: Vec3::new(100.0, 100.0, 0.0),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert(Velocity { x: 10.0, y: 10.0 });
 }
 
-fn update_pos(time: Res<Time>, mut query: Query<(&mut Position, &Velocity)>) {
+fn update_pos(time: Res<Time>, mut query: Query<(&mut Transform, &Velocity)>) {
     let dt = time.delta_seconds();
     for (mut pos, vel) in query.iter_mut() {
-        pos.x += vel.x * dt;
-        pos.y += vel.y * dt;
-        println!("{} {}", pos.x, pos.y);
+        pos.translation.x += vel.x * dt;
+        pos.translation.y += vel.y * dt;
+        println!("{} {}", pos.translation.x, pos.translation.y);
     }
 }
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_startup_system(add_player)
+        .insert_resource(ClearColor(Color::rgb(0.9, 0.9, 0.9)))
+        .add_startup_system(|mut commands: Commands| {
+            commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+        })
+        .add_startup_system(initialize_entities)
         .add_system(update_pos)
         .run()
 }
