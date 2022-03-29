@@ -2,6 +2,3 @@
 name = "game-testbed"
 version = "0.1.0"
 edition = "2021"
-
-[dependencies]
-bevy = { version = "0.6.1", features = ["dynamic"] }
