@@ -12,8 +12,10 @@
  * along with game-testbed. If not, see <https://www.gnu.org/licenses/>.
  */
 
-mod components;
-mod world;
+pub mod components;
+pub mod systems;
+pub mod world;
 
 pub use components::*;
+pub use systems::*;
 pub use world::*;

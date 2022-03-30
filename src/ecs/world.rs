@@ -13,9 +13,11 @@
  */
 
 use super::components::*;
+use super::systems::*;
 
+#[derive(Copy, Clone)]
 pub struct Entity {
-    index: usize,
+    pub index: usize,
 }
 
 pub struct World {

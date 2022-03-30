@@ -12,17 +12,17 @@
  * along with game-testbed. If not, see <https://www.gnu.org/licenses/>.
  */
 
-mod ecs;
+use super::components::*;
+use super::world::*;
 
-use crate::ecs::systems::Query;
+pub trait Query<'a> {
+    fn matches(world: &'a mut World, entity: Entity) -> Option<Self>
+    where
+        Self: Sized;
+}
 
-fn main() {
-    let mut world = ecs::World::new();
-    let entity = world.add();
-    world.insert(entity, ecs::Position { x: 0.0, y: 0.0 });
-    println!("world size: {}", world.size);
-    let p = world.positions[0].as_ref().unwrap();
-    println!("entity position: {} {}", p.x, p.y);
-    let p = <&mut ecs::Position>::matches(&mut world, entity).unwrap();
-    println!("entity position: {} {}", p.x, p.y);
+impl<'a, A: Component> Query<'a> for &'a mut A {
+    fn matches(world: &'a mut World, entity: Entity) -> Option<Self> {
+        A::get_host_vec(world)[entity.index].as_mut()
+    }
 }
