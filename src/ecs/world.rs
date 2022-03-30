@@ -24,6 +24,7 @@ pub struct World {
     pub positions: Vec<Option<Position>>,
     pub velocities: Vec<Option<Velocity>>,
     pub size: usize,
+    pub systems: Vec<Box<dyn System + 'static>>,
 }
 
 impl World {
@@ -32,6 +33,7 @@ impl World {
             positions: Vec::new(),
             velocities: Vec::new(),
             size: 0,
+            systems: Vec::new(),
         }
     }
 

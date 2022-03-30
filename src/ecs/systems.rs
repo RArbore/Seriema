@@ -15,20 +15,21 @@
 use super::components::*;
 use super::world::*;
 
-pub trait Query<'z> {
-    fn matches(world: &'z mut World, entity: Entity) -> Option<Self>
+pub trait Query {
+    fn matches(world: &mut World, entity: Entity) -> Option<Self>
     where
         Self: Sized;
 }
 
-impl<'z, A: Component> Query<'z> for &'z mut A {
-    fn matches(world: &'z mut World, entity: Entity) -> Option<Self> {
-        A::get_host_vec(world)[entity.index].as_mut()
+impl<A: Component> Query for &mut A {
+    fn matches(world: &mut World, entity: Entity) -> Option<Self> {
+        let a = A::get_host_vec(world)[entity.index].as_mut()? as *mut A;
+        unsafe { Some(&mut *a) }
     }
 }
 
-impl<'z, A: Component, B: Component> Query<'z> for (&'z mut A, &'z mut B) {
-    fn matches(world: &'z mut World, entity: Entity) -> Option<Self> {
+impl<A: Component, B: Component> Query for (&mut A, &mut B) {
+    fn matches(world: &mut World, entity: Entity) -> Option<Self> {
         let a = A::get_host_vec(world)[entity.index].as_mut()? as *mut A;
         let b = B::get_host_vec(world)[entity.index].as_mut()? as *mut B;
         debug_assert_ne!(a as *mut (), b as *mut (), "2 components being queried came back as the same component. This is likely due to a query of 2 components of the same type; this is not allowed!");
@@ -36,8 +37,8 @@ impl<'z, A: Component, B: Component> Query<'z> for (&'z mut A, &'z mut B) {
     }
 }
 
-impl<'z, A: Component, B: Component, C: Component> Query<'z> for (&'z mut A, &'z mut B, &'z mut C) {
-    fn matches(world: &'z mut World, entity: Entity) -> Option<Self> {
+impl<A: Component, B: Component, C: Component> Query for (&mut A, &mut B, &mut C) {
+    fn matches(world: &mut World, entity: Entity) -> Option<Self> {
         let a = A::get_host_vec(world)[entity.index].as_mut()? as *mut A;
         let b = B::get_host_vec(world)[entity.index].as_mut()? as *mut B;
         let c = C::get_host_vec(world)[entity.index].as_mut()? as *mut C;
@@ -45,5 +46,18 @@ impl<'z, A: Component, B: Component, C: Component> Query<'z> for (&'z mut A, &'z
         debug_assert_ne!(b as *mut (), c as *mut (), "2 components being queried came back as the same component. This is likely due to a query of 2 components of the same type; this is not allowed!");
         debug_assert_ne!(a as *mut (), c as *mut (), "2 components being queried came back as the same component. This is likely due to a query of 2 components of the same type; this is not allowed!");
         unsafe { Some((&mut *a, &mut *b, &mut *c)) }
+    }
+}
+
+pub trait System {
+    fn run(&'static self, world: &mut World, entity: Entity);
+}
+
+impl<Q: Query> System for dyn Fn(Q) {
+    fn run(&'static self, world: &mut World, entity: Entity) {
+        let matches_option = Q::matches(world, entity);
+        if let Some(matches) = matches_option {
+            self(matches);
+        }
     }
 }
