@@ -20,53 +20,47 @@ pub struct Entity {
     pub index: usize,
 }
 
-pub struct World {
+pub struct Components {
     pub positions: Vec<Option<Position>>,
     pub velocities: Vec<Option<Velocity>>,
+}
+
+pub struct World {
+    pub components: Components,
     pub size: usize,
-    pub systems: Vec<Box<dyn System + 'static>>,
+    pub systems: Vec<Box<dyn System>>,
 }
 
 impl World {
     pub fn new() -> Self {
         Self {
-            positions: Vec::new(),
-            velocities: Vec::new(),
+            components: Components {
+                positions: Vec::new(),
+                velocities: Vec::new(),
+            },
             size: 0,
             systems: Vec::new(),
         }
     }
 
     pub fn add(&mut self) -> Entity {
-        self.positions.push(None);
-        self.velocities.push(None);
+        self.components.positions.push(None);
+        self.components.velocities.push(None);
         let entity = Entity { index: self.size };
         self.size += 1;
         entity
     }
 
     pub fn insert<T: Component>(&mut self, entity: Entity, component: T) {
-        let vec = T::get_host_vec(self);
+        let vec = T::get_host_vec(&mut self.components);
         vec[entity.index] = Some(component);
     }
 
     pub fn run(&mut self) {
-        for system in self.systems {
+        for system in self.systems.iter_mut() {
             for entity in 0..self.size {
-                system.run(self, Entity { index: entity });
+                system.run(&mut self.components, Entity { index: entity });
             }
         }
-    }
-
-    pub fn at(&self, entity: Entity) -> Vec<&dyn Component> {
-        let mut vec: Vec<&dyn Component> = vec![];
-        add_if(self.positions[entity.index].as_ref(), &mut vec);
-        vec
-    }
-}
-
-fn add_if<'a, T: Component>(option: Option<&'a T>, vec: &mut Vec<&'a dyn Component>) {
-    if let Some(r) = option {
-        vec.push(r);
     }
 }

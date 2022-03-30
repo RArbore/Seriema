@@ -15,7 +15,7 @@
 use super::world::*;
 
 pub trait Component {
-    fn get_host_vec(world: &mut World) -> &mut Vec<Option<Self>>
+    fn get_host_vec(components: &mut Components) -> &mut Vec<Option<Self>>
     where
         Self: Sized;
 }
@@ -26,8 +26,8 @@ pub struct Position {
 }
 
 impl Component for Position {
-    fn get_host_vec(world: &mut World) -> &mut Vec<Option<Position>> {
-        &mut world.positions
+    fn get_host_vec(components: &mut Components) -> &mut Vec<Option<Position>> {
+        &mut components.positions
     }
 }
 
@@ -37,7 +37,7 @@ pub struct Velocity {
 }
 
 impl Component for Velocity {
-    fn get_host_vec(world: &mut World) -> &mut Vec<Option<Velocity>> {
-        &mut world.velocities
+    fn get_host_vec(components: &mut Components) -> &mut Vec<Option<Velocity>> {
+        &mut components.velocities
     }
 }

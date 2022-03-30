@@ -14,17 +14,14 @@
 
 mod ecs;
 
-use crate::ecs::systems::Query;
-
 fn main() {
     let mut world = ecs::World::new();
     let entity = world.add();
     world.insert(entity, ecs::Position { x: 0.0, y: 1.0 });
     world.insert(entity, ecs::Velocity { x: 2.0, y: 3.0 });
     println!("world size: {}", world.size);
-    let (p, v) = <(&mut ecs::Position, &mut ecs::Velocity)>::matches(&mut world, entity).unwrap();
-    println!(
-        "entity position and velocity: {} {} {} {}",
-        p.x, p.y, v.x, v.y
-    );
+    world.systems.push(Box::new(
+        ecs::print_position_and_velocity as fn((&mut ecs::Position, &mut ecs::Velocity)),
+    ));
+    world.run();
 }
