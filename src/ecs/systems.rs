@@ -33,6 +33,19 @@ impl<'z, A: Component, B: Component> Query<'z> for (*mut A, *mut B) {
     fn matches(world: &'z mut World, entity: Entity) -> Option<Self> {
         let a = A::get_host_vec(world)[entity.index].as_mut()? as *mut A;
         let b = B::get_host_vec(world)[entity.index].as_mut()? as *mut B;
+        debug_assert_ne!(a as *mut (), b as *mut (), "2 components being queried came back as the same component. This is likely due to a query of 2 components of the same type; this is not allowed!");
         Some((a, b))
+    }
+}
+
+impl<'z, A: Component, B: Component, C: Component> Query<'z> for (*mut A, *mut B, *mut C) {
+    fn matches(world: &'z mut World, entity: Entity) -> Option<Self> {
+        let a = A::get_host_vec(world)[entity.index].as_mut()? as *mut A;
+        let b = B::get_host_vec(world)[entity.index].as_mut()? as *mut B;
+        let c = C::get_host_vec(world)[entity.index].as_mut()? as *mut C;
+        debug_assert_ne!(a as *mut (), b as *mut (), "2 components being queried came back as the same component. This is likely due to a query of 2 components of the same type; this is not allowed!");
+        debug_assert_ne!(b as *mut (), c as *mut (), "2 components being queried came back as the same component. This is likely due to a query of 2 components of the same type; this is not allowed!");
+        debug_assert_ne!(a as *mut (), c as *mut (), "2 components being queried came back as the same component. This is likely due to a query of 2 components of the same type; this is not allowed!");
+        Some((a, b, c))
     }
 }
