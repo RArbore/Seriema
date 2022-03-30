@@ -15,14 +15,24 @@
 use super::components::*;
 use super::world::*;
 
-pub trait Query<'a> {
-    fn matches(world: &'a mut World, entity: Entity) -> Option<Self>
+pub trait Query<'z> {
+    fn matches(world: &'z mut World, entity: Entity) -> Option<Self>
     where
         Self: Sized;
 }
 
-impl<'a, A: Component> Query<'a> for &'a mut A {
-    fn matches(world: &'a mut World, entity: Entity) -> Option<Self> {
-        A::get_host_vec(world)[entity.index].as_mut()
+impl<'z, A: Component> Query<'z> for *mut A {
+    fn matches(world: &'z mut World, entity: Entity) -> Option<Self> {
+        A::get_host_vec(world)[entity.index]
+            .as_mut()
+            .map(|x| x as *mut A)
+    }
+}
+
+impl<'z, A: Component, B: Component> Query<'z> for (*mut A, *mut B) {
+    fn matches(world: &'z mut World, entity: Entity) -> Option<Self> {
+        let a = A::get_host_vec(world)[entity.index].as_mut()? as *mut A;
+        let b = B::get_host_vec(world)[entity.index].as_mut()? as *mut B;
+        Some((a, b))
     }
 }
