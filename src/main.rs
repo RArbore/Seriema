@@ -22,14 +22,9 @@ fn main() {
     world.insert(entity, ecs::Position { x: 0.0, y: 1.0 });
     world.insert(entity, ecs::Velocity { x: 2.0, y: 3.0 });
     println!("world size: {}", world.size);
-    let (p, v) = <(*mut ecs::Position, *mut ecs::Velocity)>::matches(&mut world, entity).unwrap();
-    unsafe {
-        println!(
-            "entity position and velocity: {} {} {} {}",
-            (*p).x,
-            (*p).y,
-            (*v).x,
-            (*v).y
-        );
-    }
+    let (p, v) = <(&mut ecs::Position, &mut ecs::Velocity)>::matches(&mut world, entity).unwrap();
+    println!(
+        "entity position and velocity: {} {} {} {}",
+        p.x, p.y, v.x, v.y
+    );
 }

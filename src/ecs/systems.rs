@@ -21,24 +21,22 @@ pub trait Query<'z> {
         Self: Sized;
 }
 
-impl<'z, A: Component> Query<'z> for *mut A {
+impl<'z, A: Component> Query<'z> for &'z mut A {
     fn matches(world: &'z mut World, entity: Entity) -> Option<Self> {
-        A::get_host_vec(world)[entity.index]
-            .as_mut()
-            .map(|x| x as *mut A)
+        A::get_host_vec(world)[entity.index].as_mut()
     }
 }
 
-impl<'z, A: Component, B: Component> Query<'z> for (*mut A, *mut B) {
+impl<'z, A: Component, B: Component> Query<'z> for (&'z mut A, &'z mut B) {
     fn matches(world: &'z mut World, entity: Entity) -> Option<Self> {
         let a = A::get_host_vec(world)[entity.index].as_mut()? as *mut A;
         let b = B::get_host_vec(world)[entity.index].as_mut()? as *mut B;
         debug_assert_ne!(a as *mut (), b as *mut (), "2 components being queried came back as the same component. This is likely due to a query of 2 components of the same type; this is not allowed!");
-        Some((a, b))
+        unsafe { Some((&mut *a, &mut *b)) }
     }
 }
 
-impl<'z, A: Component, B: Component, C: Component> Query<'z> for (*mut A, *mut B, *mut C) {
+impl<'z, A: Component, B: Component, C: Component> Query<'z> for (&'z mut A, &'z mut B, &'z mut C) {
     fn matches(world: &'z mut World, entity: Entity) -> Option<Self> {
         let a = A::get_host_vec(world)[entity.index].as_mut()? as *mut A;
         let b = B::get_host_vec(world)[entity.index].as_mut()? as *mut B;
@@ -46,6 +44,6 @@ impl<'z, A: Component, B: Component, C: Component> Query<'z> for (*mut A, *mut B
         debug_assert_ne!(a as *mut (), b as *mut (), "2 components being queried came back as the same component. This is likely due to a query of 2 components of the same type; this is not allowed!");
         debug_assert_ne!(b as *mut (), c as *mut (), "2 components being queried came back as the same component. This is likely due to a query of 2 components of the same type; this is not allowed!");
         debug_assert_ne!(a as *mut (), c as *mut (), "2 components being queried came back as the same component. This is likely due to a query of 2 components of the same type; this is not allowed!");
-        Some((a, b, c))
+        unsafe { Some((&mut *a, &mut *b, &mut *c)) }
     }
 }
