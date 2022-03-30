@@ -50,6 +50,14 @@ impl World {
         vec[entity.index] = Some(component);
     }
 
+    pub fn run(&mut self) {
+        for system in self.systems {
+            for entity in 0..self.size {
+                system.run(self, Entity { index: entity });
+            }
+        }
+    }
+
     pub fn at(&self, entity: Entity) -> Vec<&dyn Component> {
         let mut vec: Vec<&dyn Component> = vec![];
         add_if(self.positions[entity.index].as_ref(), &mut vec);

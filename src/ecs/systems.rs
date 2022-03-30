@@ -53,11 +53,15 @@ pub trait System {
     fn run(&'static self, world: &mut World, entity: Entity);
 }
 
-impl<Q: Query> System for dyn Fn(Q) {
+impl<Q: Query> System for fn(Q) {
     fn run(&'static self, world: &mut World, entity: Entity) {
         let matches_option = Q::matches(world, entity);
         if let Some(matches) = matches_option {
             self(matches);
         }
     }
+}
+
+pub fn print_position(position: &mut Position) {
+    println!("print_position: {} {}", position.x, position.y);
 }
