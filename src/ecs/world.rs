@@ -12,7 +12,10 @@
  * along with game-testbed. If not, see <https://www.gnu.org/licenses/>.
  */
 
+use std::collections::HashMap;
+
 use super::components::*;
+use super::resources::*;
 use super::systems::*;
 
 #[derive(Copy, Clone)]
@@ -29,6 +32,7 @@ pub struct World {
     pub components: Components,
     pub size: usize,
     pub systems: Vec<Box<dyn System>>,
+    pub resources: HashMap<ResourceTag, Box<dyn Resource>>,
 }
 
 impl World {
@@ -40,6 +44,7 @@ impl World {
             },
             size: 0,
             systems: Vec::new(),
+            resources: HashMap::new(),
         }
     }
 
