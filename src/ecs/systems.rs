@@ -56,26 +56,27 @@ macro_rules! system_impl {
             }
         }
     };
-    /*($($x:ident),+, $($y:ident, $z: ty),*) => {
+    ($($x:ident),+, $(($y:ident, $z: ty)),*) => {
         #[allow(unused_parens, non_snake_case)]
-        impl<$($x: Component),*> System for fn($(&mut $z),*), ($(&mut $x),*) {
+        impl<$($x: Component),*> System for fn(($(&mut $z),*), ($(&mut $x),*)) {
             fn run(&self, components: &mut Components, entity: Entity, resources: &mut Resources) {
                 let matches_option = <($(&mut $x),*)>::matches(components, entity);
                 if let Some(matches) = matches_option {
-                    self($(resources.$y),*, matches);
+                    self($(&mut resources.$y),*, matches);
                 }
             }
         }
-    };*/
+    };
 }
 
-//system_impl!(A);
-system_impl!(A, B);
-//system_impl!(A, B, C);
-
-pub fn print_position_and_velocity(query: (&mut Position, &mut Velocity)) {
+system_impl!(A, B, (timer, Timer));
+pub fn print_position_and_velocity(timer: &mut Timer, query: (&mut Position, &mut Velocity)) {
     println!(
-        "print_position_and_velocity: {} {} {} {}",
-        query.0.x, query.0.y, query.1.x, query.1.y
+        "print_position_and_velocity: {} {} {} {} {}",
+        query.0.x,
+        query.0.y,
+        query.1.x,
+        query.1.y,
+        timer.millis()
     );
 }
