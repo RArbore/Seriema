@@ -22,6 +22,24 @@ pub trait Query {
         Self: Sized;
 }
 
+macro_rules! query_tuple_impl {
+    ($($x:ident),+) => {
+        impl<$($x: Component),*> Query for ($(&mut $x),*) {
+            fn matches(components: &mut Components, entity: Entity) -> Option<Self> {
+                $(
+                    let $x = $x::get_host_vec(components)[entity.index].as_mut()? as *mut $x;
+                )*
+                    unsafe { Some(($(&mut *$x),*)) }
+            }
+        }
+    };
+}
+
+query_tuple_impl!(A);
+query_tuple_impl!(A, B);
+query_tuple_impl!(A, B, C);
+
+/*
 impl<A: Component> Query for &mut A {
     fn matches(components: &mut Components, entity: Entity) -> Option<Self> {
         let a = A::get_host_vec(components)[entity.index].as_mut()? as *mut A;
@@ -49,6 +67,7 @@ impl<A: Component, B: Component, C: Component> Query for (&mut A, &mut B, &mut C
         unsafe { Some((&mut *a, &mut *b, &mut *c)) }
     }
 }
+*/
 
 pub trait System {
     fn run(&self, components: &mut Components, entity: Entity, resources: &mut Resources);
