@@ -24,6 +24,7 @@ pub trait Query {
 
 macro_rules! query_tuple_impl {
     ($($x:ident),+) => {
+        #[allow(unused_parens, non_snake_case)]
         impl<$($x: Component),*> Query for ($(&mut $x),*) {
             fn matches(components: &mut Components, entity: Entity) -> Option<Self> {
                 $(
@@ -39,68 +40,27 @@ query_tuple_impl!(A);
 query_tuple_impl!(A, B);
 query_tuple_impl!(A, B, C);
 
-/*
-impl<A: Component> Query for &mut A {
-    fn matches(components: &mut Components, entity: Entity) -> Option<Self> {
-        let a = A::get_host_vec(components)[entity.index].as_mut()? as *mut A;
-        unsafe { Some(&mut *a) }
-    }
-}
-
-impl<A: Component, B: Component> Query for (&mut A, &mut B) {
-    fn matches(components: &mut Components, entity: Entity) -> Option<Self> {
-        let a = A::get_host_vec(components)[entity.index].as_mut()? as *mut A;
-        let b = B::get_host_vec(components)[entity.index].as_mut()? as *mut B;
-        debug_assert_ne!(a as *mut (), b as *mut (), "2 components being queried came back as the same component. This is likely due to a query of 2 components of the same type; this is not allowed!");
-        unsafe { Some((&mut *a, &mut *b)) }
-    }
-}
-
-impl<A: Component, B: Component, C: Component> Query for (&mut A, &mut B, &mut C) {
-    fn matches(components: &mut Components, entity: Entity) -> Option<Self> {
-        let a = A::get_host_vec(components)[entity.index].as_mut()? as *mut A;
-        let b = B::get_host_vec(components)[entity.index].as_mut()? as *mut B;
-        let c = C::get_host_vec(components)[entity.index].as_mut()? as *mut C;
-        debug_assert_ne!(a as *mut (), b as *mut (), "2 components being queried came back as the same component. This is likely due to a query of 2 components of the same type; this is not allowed!");
-        debug_assert_ne!(b as *mut (), c as *mut (), "2 components being queried came back as the same component. This is likely due to a query of 2 components of the same type; this is not allowed!");
-        debug_assert_ne!(a as *mut (), c as *mut (), "2 components being queried came back as the same component. This is likely due to a query of 2 components of the same type; this is not allowed!");
-        unsafe { Some((&mut *a, &mut *b, &mut *c)) }
-    }
-}
-*/
-
 pub trait System {
     fn run(&self, components: &mut Components, entity: Entity, resources: &mut Resources);
 }
 
-impl<A: Component> System for for<'a> fn(&'a mut A) {
-    fn run(&self, components: &mut Components, entity: Entity, resources: &mut Resources) {
-        let matches_option = <&mut A>::matches(components, entity);
-        if let Some(matches) = matches_option {
-            self(matches);
+macro_rules! system_impl {
+    ($($x:ident),+) => {
+        #[allow(unused_parens, non_snake_case)]
+        impl<$($x: Component),*> System for fn(($(&mut $x),*)) {
+            fn run(&self, components: &mut Components, entity: Entity, resources: &mut Resources) {
+                let matches_option = <($(&mut $x),*)>::matches(components, entity);
+                if let Some(matches) = matches_option {
+                    self(matches);
+                }
+            }
         }
-    }
+    };
 }
 
-impl<A: Component, B: Component> System for for<'a, 'b> fn((&'a mut A, &'b mut B)) {
-    fn run(&self, components: &mut Components, entity: Entity, resources: &mut Resources) {
-        let matches_option = <(&mut A, &mut B)>::matches(components, entity);
-        if let Some(matches) = matches_option {
-            self(matches);
-        }
-    }
-}
-
-impl<A: Component, B: Component, C: Component> System
-    for for<'a, 'b, 'c> fn((&'a mut A, &'b mut B, &'c mut C))
-{
-    fn run(&self, components: &mut Components, entity: Entity, resources: &mut Resources) {
-        let matches_option = <(&mut A, &mut B, &mut C)>::matches(components, entity);
-        if let Some(matches) = matches_option {
-            self(matches);
-        }
-    }
-}
+system_impl!(A);
+system_impl!(A, B);
+system_impl!(A, B, C);
 
 pub fn print_position_and_velocity(query: (&mut Position, &mut Velocity)) {
     println!(
