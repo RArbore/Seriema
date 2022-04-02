@@ -13,6 +13,7 @@
  */
 
 use super::components::*;
+use super::resources::*;
 use super::world::*;
 
 pub trait Query {
@@ -50,11 +51,11 @@ impl<A: Component, B: Component, C: Component> Query for (&mut A, &mut B, &mut C
 }
 
 pub trait System {
-    fn run(&self, components: &mut Components, entity: Entity);
+    fn run(&self, components: &mut Components, entity: Entity, resources: &mut Resources);
 }
 
 impl<A: Component> System for for<'a> fn(&'a mut A) {
-    fn run(&self, components: &mut Components, entity: Entity) {
+    fn run(&self, components: &mut Components, entity: Entity, resources: &mut Resources) {
         let matches_option = <&mut A>::matches(components, entity);
         if let Some(matches) = matches_option {
             self(matches);
@@ -63,7 +64,7 @@ impl<A: Component> System for for<'a> fn(&'a mut A) {
 }
 
 impl<A: Component, B: Component> System for for<'a, 'b> fn((&'a mut A, &'b mut B)) {
-    fn run(&self, components: &mut Components, entity: Entity) {
+    fn run(&self, components: &mut Components, entity: Entity, resources: &mut Resources) {
         let matches_option = <(&mut A, &mut B)>::matches(components, entity);
         if let Some(matches) = matches_option {
             self(matches);
@@ -74,7 +75,7 @@ impl<A: Component, B: Component> System for for<'a, 'b> fn((&'a mut A, &'b mut B
 impl<A: Component, B: Component, C: Component> System
     for for<'a, 'b, 'c> fn((&'a mut A, &'b mut B, &'c mut C))
 {
-    fn run(&self, components: &mut Components, entity: Entity) {
+    fn run(&self, components: &mut Components, entity: Entity, resources: &mut Resources) {
         let matches_option = <(&mut A, &mut B, &mut C)>::matches(components, entity);
         if let Some(matches) = matches_option {
             self(matches);

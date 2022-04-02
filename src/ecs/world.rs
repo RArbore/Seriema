@@ -28,11 +28,13 @@ pub struct Components {
     pub velocities: Vec<Option<Velocity>>,
 }
 
+pub type Resources = HashMap<ResourceTag, Box<dyn Resource>>;
+
 pub struct World {
     pub components: Components,
     pub size: usize,
     pub systems: Vec<Box<dyn System>>,
-    pub resources: HashMap<ResourceTag, Box<dyn Resource>>,
+    pub resources: Resources,
 }
 
 impl World {
@@ -64,7 +66,11 @@ impl World {
     pub fn run(&mut self) {
         for system in self.systems.iter_mut() {
             for entity in 0..self.size {
-                system.run(&mut self.components, Entity { index: entity });
+                system.run(
+                    &mut self.components,
+                    Entity { index: entity },
+                    &mut self.resources,
+                );
             }
         }
     }
