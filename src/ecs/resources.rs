@@ -14,17 +14,6 @@
 
 use std::time::Instant;
 
-pub trait Resource: Send + Sync {
-    fn tag() -> ResourceTag
-    where
-        Self: Sized;
-}
-
-#[derive(PartialEq, Eq, Hash)]
-pub enum ResourceTag {
-    TimerTag,
-}
-
 pub struct Timer {
     start: Instant,
 }
@@ -37,14 +26,5 @@ impl Timer {
     }
     pub fn millis(&self) -> u32 {
         self.start.elapsed().as_millis() as u32
-    }
-}
-
-impl Resource for Timer {
-    fn tag() -> ResourceTag
-    where
-        Self: Sized,
-    {
-        ResourceTag::TimerTag
     }
 }

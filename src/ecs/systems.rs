@@ -48,7 +48,7 @@ macro_rules! system_impl {
     ($($x:ident),+) => {
         #[allow(unused_parens, non_snake_case)]
         impl<$($x: Component),*> System for fn(($(&mut $x),*)) {
-            fn run(&self, components: &mut Components, entity: Entity, resources: &mut Resources) {
+            fn run(&self, components: &mut Components, entity: Entity, _resources: &mut Resources) {
                 let matches_option = <($(&mut $x),*)>::matches(components, entity);
                 if let Some(matches) = matches_option {
                     self(matches);
@@ -56,11 +56,22 @@ macro_rules! system_impl {
             }
         }
     };
+    /*($($x:ident),+, $($y:ident, $z: ty),*) => {
+        #[allow(unused_parens, non_snake_case)]
+        impl<$($x: Component),*> System for fn($(&mut $z),*), ($(&mut $x),*) {
+            fn run(&self, components: &mut Components, entity: Entity, resources: &mut Resources) {
+                let matches_option = <($(&mut $x),*)>::matches(components, entity);
+                if let Some(matches) = matches_option {
+                    self($(resources.$y),*, matches);
+                }
+            }
+        }
+    };*/
 }
 
-system_impl!(A);
+//system_impl!(A);
 system_impl!(A, B);
-system_impl!(A, B, C);
+//system_impl!(A, B, C);
 
 pub fn print_position_and_velocity(query: (&mut Position, &mut Velocity)) {
     println!(

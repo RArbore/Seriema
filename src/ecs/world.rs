@@ -12,8 +12,6 @@
  * along with game-testbed. If not, see <https://www.gnu.org/licenses/>.
  */
 
-use std::collections::HashMap;
-
 use super::components::*;
 use super::resources::*;
 use super::systems::*;
@@ -28,7 +26,9 @@ pub struct Components {
     pub velocities: Vec<Option<Velocity>>,
 }
 
-pub type Resources = HashMap<ResourceTag, Box<dyn Resource>>;
+pub struct Resources {
+    pub timer: Timer,
+}
 
 pub struct World {
     pub components: Components,
@@ -46,7 +46,9 @@ impl World {
             },
             size: 0,
             systems: Vec::new(),
-            resources: HashMap::new(),
+            resources: Resources {
+                timer: Timer::new(),
+            },
         }
     }
 

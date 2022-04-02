@@ -20,8 +20,7 @@ fn main() {
     world.insert(entity, ecs::Position { x: 0.0, y: 1.0 });
     world.insert(entity, ecs::Velocity { x: 2.0, y: 3.0 });
     println!("world size: {}", world.size);
-    world.systems.push(Box::new(
-        ecs::print_position_and_velocity as fn((&mut ecs::Position, &mut ecs::Velocity)),
-    ));
+    let system: fn((&mut ecs::Position, &mut ecs::Velocity)) = ecs::print_position_and_velocity;
+    world.systems.push(Box::new(system));
     world.run();
 }
