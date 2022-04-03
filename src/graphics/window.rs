@@ -32,4 +32,29 @@ impl Graphics {
             .expect("Could not create a window.");
         Graphics { event_loop, window }
     }
+
+    pub fn run<F: FnMut() + 'static>(self, mut tick: F) {
+        self.event_loop.run(move |event, _, control_flow| {
+            tick();
+            match event {
+                Event::WindowEvent {
+                    ref event,
+                    window_id,
+                } if window_id == self.window.id() => match event {
+                    WindowEvent::CloseRequested
+                    | WindowEvent::KeyboardInput {
+                        input:
+                            KeyboardInput {
+                                state: ElementState::Pressed,
+                                virtual_keycode: Some(VirtualKeyCode::Escape),
+                                ..
+                            },
+                        ..
+                    } => *control_flow = ControlFlow::Exit,
+                    _ => {}
+                },
+                _ => {}
+            }
+        });
+    }
 }

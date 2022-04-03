@@ -25,5 +25,5 @@ fn main() {
         ecs::print_position_and_velocity;
     world.systems.push(Box::new(system));
     world.run();
-    let graphics = graphics::Graphics::new();
+    graphics::Graphics::new().run(move || world.run());
 }
