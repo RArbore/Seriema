@@ -45,7 +45,7 @@ pub trait System {
 }
 
 macro_rules! system_impl {
-    ($($x:ident),+) => {
+    ($($x:ident),*) => {
         #[allow(unused_parens, non_snake_case)]
         impl<$($x: Component),*> System for fn(($(&mut $x),*)) {
             fn run(&self, components: &mut Components, entity: Entity, _resources: &mut Resources) {
@@ -56,7 +56,7 @@ macro_rules! system_impl {
             }
         }
     };
-    ($($x:ident),+, $(($y:ident, $z: ty)),*) => {
+    ($($x:ident),*, $(($y:ident, $z: ty)),*) => {
         #[allow(unused_parens, non_snake_case)]
         impl<$($x: Component),*> System for fn(($(&mut $z),*), ($(&mut $x),*)) {
             fn run(&self, components: &mut Components, entity: Entity, resources: &mut Resources) {
@@ -67,17 +67,26 @@ macro_rules! system_impl {
             }
         }
     };
+    ($(($y:ident, $z: ty)),*) => {
+        #[allow(unused_parens, non_snake_case)]
+        impl System for fn(($(&mut $z),*)) {
+            fn run(&self, _components: &mut Components, _entity: Entity, resources: &mut Resources) {
+                self($(&mut resources.$y),*);
+            }
+        }
+    };
+}
+
+system_impl!((timer, Timer));
+pub fn print_fps(timer: &mut Timer) {
+    println!("FPS: {}", 1.0 / timer.dt());
 }
 
 system_impl!(A, B, (timer, Timer));
 pub fn print_position_and_velocity(timer: &mut Timer, query: (&mut Position, &mut Velocity)) {
     println!(
-        "print_position_and_velocity: {} {} {} {} {}",
-        query.0.x,
-        query.0.y,
-        query.1.x,
-        query.1.y,
-        timer.dt()
+        "print_position_and_velocity: {} {} {} {}",
+        query.0.x, query.0.y, query.1.x, query.1.y,
     );
     query.0.x += timer.dt();
 }
