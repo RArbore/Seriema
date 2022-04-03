@@ -12,18 +12,6 @@
  * along with game-testbed. If not, see <https://www.gnu.org/licenses/>.
  */
 
-mod ecs;
-mod graphics;
+pub mod window;
 
-fn main() {
-    let mut world = ecs::World::new();
-    let entity = world.add();
-    world.insert(entity, ecs::Position { x: 0.0, y: 1.0 });
-    world.insert(entity, ecs::Velocity { x: 2.0, y: 3.0 });
-    println!("world size: {}", world.size);
-    let system: fn(&mut ecs::Timer, (&mut ecs::Position, &mut ecs::Velocity)) =
-        ecs::print_position_and_velocity;
-    world.systems.push(Box::new(system));
-    world.run();
-    let graphics = graphics::Graphics::new();
-}
+pub use window::*;
