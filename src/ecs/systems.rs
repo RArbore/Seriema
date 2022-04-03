@@ -77,6 +77,7 @@ pub fn print_position_and_velocity(timer: &mut Timer, query: (&mut Position, &mu
         query.0.y,
         query.1.x,
         query.1.y,
-        timer.millis()
+        timer.dt()
     );
+    query.0.x += timer.dt();
 }

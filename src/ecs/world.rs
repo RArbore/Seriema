@@ -66,6 +66,7 @@ impl World {
     }
 
     pub fn run(&mut self) {
+        self.resources.timer.update_dt();
         for system in self.systems.iter_mut() {
             for entity in 0..self.size {
                 system.run(
