@@ -21,6 +21,7 @@ use winit::{
 pub struct Graphics {
     event_loop: EventLoop<()>,
     window: Window,
+    context: Context,
 }
 
 struct Context {
@@ -38,10 +39,15 @@ impl Graphics {
         let window = WindowBuilder::new()
             .build(&event_loop)
             .expect("Could not create a window.");
-        Graphics { event_loop, window }
+        let context = pollster::block_on(Context::new(&window));
+        Graphics {
+            event_loop,
+            window,
+            context,
+        }
     }
 
-    pub fn run<F: FnMut() + 'static>(self, mut tick: F) -> ! {
+    pub fn run<F: FnMut() + 'static>(mut self, mut tick: F) -> ! {
         self.event_loop.run(move |event, _, control_flow| {
             tick();
             match event {
@@ -49,6 +55,12 @@ impl Graphics {
                     ref event,
                     window_id,
                 } if window_id == self.window.id() => match event {
+                    WindowEvent::Resized(physical_size) => {
+                        self.context.resize(*physical_size);
+                    }
+                    WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
+                        self.context.resize(**new_inner_size);
+                    }
                     WindowEvent::CloseRequested => *control_flow = ControlFlow::Exit,
                     _ => {}
                 },
@@ -102,7 +114,12 @@ impl Context {
     }
 
     fn resize(&mut self, new_size: winit::dpi::PhysicalSize<u32>) {
-        todo!()
+        if new_size.width > 0 && new_size.height > 0 {
+            self.size = new_size;
+            self.config.width = new_size.width;
+            self.config.height = new_size.height;
+            self.surface.configure(&self.device, &self.config);
+        }
     }
 
     fn input(&mut self, event: &WindowEvent) -> bool {
