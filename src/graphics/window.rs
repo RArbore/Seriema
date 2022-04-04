@@ -51,19 +51,34 @@ impl Graphics {
         self.event_loop.run(move |event, _, control_flow| {
             tick();
             match event {
+                Event::RedrawRequested(window_id) if window_id == self.window.id() => {
+                    match self.context.render() {
+                        Ok(_) => {}
+                        Err(wgpu::SurfaceError::Lost) => self.context.resize(self.context.size),
+                        Err(wgpu::SurfaceError::OutOfMemory) => *control_flow = ControlFlow::Exit,
+                        Err(e) => eprintln!("{:?}", e),
+                    }
+                }
+                Event::MainEventsCleared => {
+                    self.window.request_redraw();
+                }
                 Event::WindowEvent {
                     ref event,
                     window_id,
-                } if window_id == self.window.id() => match event {
-                    WindowEvent::Resized(physical_size) => {
-                        self.context.resize(*physical_size);
+                } if window_id == self.window.id() => {
+                    if !self.context.input(event) {
+                        match event {
+                            WindowEvent::Resized(physical_size) => {
+                                self.context.resize(*physical_size);
+                            }
+                            WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
+                                self.context.resize(**new_inner_size);
+                            }
+                            WindowEvent::CloseRequested => *control_flow = ControlFlow::Exit,
+                            _ => {}
+                        }
                     }
-                    WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
-                        self.context.resize(**new_inner_size);
-                    }
-                    WindowEvent::CloseRequested => *control_flow = ControlFlow::Exit,
-                    _ => {}
-                },
+                }
                 _ => {}
             }
         });
@@ -122,15 +137,44 @@ impl Context {
         }
     }
 
-    fn input(&mut self, event: &WindowEvent) -> bool {
-        todo!()
-    }
-
-    fn update(&mut self) {
-        todo!()
+    fn input(&mut self, _event: &WindowEvent) -> bool {
+        false
     }
 
     fn render(&mut self) -> Result<(), wgpu::SurfaceError> {
-        todo!()
+        let output = self.surface.get_current_texture()?;
+        let view = output
+            .texture
+            .create_view(&wgpu::TextureViewDescriptor::default());
+        let mut encoder = self
+            .device
+            .create_command_encoder(&wgpu::CommandEncoderDescriptor {
+                label: Some("Render Encoder"),
+            });
+
+        {
+            let _render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                label: Some("Render Pass"),
+                color_attachments: &[wgpu::RenderPassColorAttachment {
+                    view: &view,
+                    resolve_target: None,
+                    ops: wgpu::Operations {
+                        load: wgpu::LoadOp::Clear(wgpu::Color {
+                            r: 0.1,
+                            g: 0.2,
+                            b: 0.3,
+                            a: 1.0,
+                        }),
+                        store: true,
+                    },
+                }],
+                depth_stencil_attachment: None,
+            });
+        }
+
+        self.queue.submit(std::iter::once(encoder.finish()));
+        output.present();
+
+        Ok(())
     }
 }
