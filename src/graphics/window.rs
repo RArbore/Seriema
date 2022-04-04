@@ -18,7 +18,10 @@ use winit::{
     window::*,
 };
 
+use wgpu::util::DeviceExt;
 use wgpu::*;
+
+use super::sprite::*;
 
 pub struct Graphics {
     event_loop: EventLoop<()>,
@@ -33,6 +36,7 @@ struct Context {
     config: wgpu::SurfaceConfiguration,
     size: winit::dpi::PhysicalSize<u32>,
     render_pipeline: wgpu::RenderPipeline,
+    vertex_buffers: wgpu::Buffer,
 }
 
 impl Graphics {
@@ -151,7 +155,7 @@ impl Context {
                 topology: wgpu::PrimitiveTopology::TriangleList,
                 strip_index_format: None,
                 front_face: wgpu::FrontFace::Ccw,
-                cull_mode: Some(wgpu::Face::Back),
+                cull_mode: None,
                 polygon_mode: wgpu::PolygonMode::Fill,
                 unclipped_depth: false,
                 conservative: false,
@@ -165,6 +169,12 @@ impl Context {
             multiview: None,
         });
 
+        let vertex_buffers = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("Vertex Buffers"),
+            contents: bytemuck::cast_slice(VERTICES),
+            usage: wgpu::BufferUsages::VERTEX,
+        });
+
         Self {
             surface,
             device,
@@ -172,6 +182,7 @@ impl Context {
             config,
             size,
             render_pipeline,
+            vertex_buffers,
         }
     }
 

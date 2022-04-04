@@ -12,8 +12,24 @@
  * along with game-testbed. If not, see <https://www.gnu.org/licenses/>.
  */
 
-pub mod sprite;
-pub mod window;
+#[repr(C)]
+#[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
+pub struct Vertex {
+    position: [f32; 2],
+    texcoord: [f32; 2],
+}
 
-pub use sprite::*;
-pub use window::*;
+pub const VERTICES: &[Vertex] = &[
+    Vertex {
+        position: [0.0, 0.5],
+        texcoord: [0.0, 0.0],
+    },
+    Vertex {
+        position: [-0.5, -0.5],
+        texcoord: [0.0, 0.0],
+    },
+    Vertex {
+        position: [0.5, -0.5],
+        texcoord: [0.0, 0.0],
+    },
+];
