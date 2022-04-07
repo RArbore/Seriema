@@ -21,8 +21,6 @@ use winit::{
 use wgpu::util::DeviceExt;
 use wgpu::*;
 
-use image::GenericImageView;
-
 use super::sprite::*;
 
 pub struct Graphics {
@@ -40,6 +38,7 @@ struct Context {
     render_pipeline: wgpu::RenderPipeline,
     vertex_buffers: wgpu::Buffer,
     texture_bind_group: wgpu::BindGroup,
+    texture: wgpu::Texture,
 }
 
 impl Graphics {
@@ -130,51 +129,14 @@ impl Context {
         };
         surface.configure(&device, &config);
 
-        let texture_bytes = include_bytes!("../../assets/Enemy01/attack01.png");
-        let texture_image = image::load_from_memory(texture_bytes).unwrap();
-        let texture_rgba = texture_image.to_rgba8().into_raw();
+        let texture = super::sprite::Texture::from_bytes(
+            &device,
+            &queue,
+            include_bytes!("../../assets/Enemy01/attack01.png"),
+            "Texture",
+        )
+        .unwrap();
 
-        let dimensions = texture_image.dimensions();
-
-        let texture_size = wgpu::Extent3d {
-            width: dimensions.0,
-            height: dimensions.1,
-            depth_or_array_layers: 1,
-        };
-        let texture = device.create_texture(&wgpu::TextureDescriptor {
-            size: texture_size,
-            mip_level_count: 1,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
-            format: wgpu::TextureFormat::Rgba8UnormSrgb,
-            usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
-            label: Some("Texture"),
-        });
-        queue.write_texture(
-            wgpu::ImageCopyTexture {
-                texture: &texture,
-                mip_level: 0,
-                origin: wgpu::Origin3d::ZERO,
-                aspect: wgpu::TextureAspect::All,
-            },
-            &texture_rgba[..],
-            wgpu::ImageDataLayout {
-                offset: 0,
-                bytes_per_row: std::num::NonZeroU32::new(4 * dimensions.0),
-                rows_per_image: std::num::NonZeroU32::new(dimensions.1),
-            },
-            texture_size,
-        );
-        let texture_view = texture.create_view(&wgpu::TextureViewDescriptor::default());
-        let texture_sampler = device.create_sampler(&wgpu::SamplerDescriptor {
-            address_mode_u: wgpu::AddressMode::ClampToEdge,
-            address_mode_v: wgpu::AddressMode::ClampToEdge,
-            address_mode_w: wgpu::AddressMode::ClampToEdge,
-            mag_filter: wgpu::FilterMode::Nearest,
-            min_filter: wgpu::FilterMode::Nearest,
-            mipmap_filter: wgpu::FilterMode::Nearest,
-            ..Default::default()
-        });
         let texture_bind_group_layout =
             device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
                 entries: &[
@@ -202,11 +164,11 @@ impl Context {
             entries: &[
                 wgpu::BindGroupEntry {
                     binding: 0,
-                    resource: wgpu::BindingResource::TextureView(&texture_view),
+                    resource: wgpu::BindingResource::TextureView(&texture.view),
                 },
                 wgpu::BindGroupEntry {
                     binding: 1,
-                    resource: wgpu::BindingResource::Sampler(&texture_sampler),
+                    resource: wgpu::BindingResource::Sampler(&texture.sampler),
                 },
             ],
             label: Some("diffuse_bind_group"),
@@ -284,6 +246,7 @@ impl Context {
             render_pipeline,
             vertex_buffers,
             texture_bind_group,
+            texture: texture.texture,
         }
     }
 
