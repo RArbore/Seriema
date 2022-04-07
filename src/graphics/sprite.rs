@@ -12,6 +12,8 @@
  * along with game-testbed. If not, see <https://www.gnu.org/licenses/>.
  */
 
+use wgpu::*;
+
 use image::GenericImageView;
 use image::ImageResult;
 
@@ -111,4 +113,52 @@ impl Texture {
             sampler,
         })
     }
+}
+
+pub fn create_texture_bind_group(
+    textures: &[&Texture],
+    device: &Device,
+) -> (BindGroup, BindGroupLayout) {
+    let mut repeated_pattern = vec![];
+    for i in 0..textures.len() {
+        repeated_pattern.push(wgpu::BindGroupLayoutEntry {
+            binding: (2 * i) as u32,
+            visibility: wgpu::ShaderStages::FRAGMENT,
+            ty: wgpu::BindingType::Texture {
+                multisampled: false,
+                view_dimension: wgpu::TextureViewDimension::D2,
+                sample_type: wgpu::TextureSampleType::Float { filterable: true },
+            },
+            count: None,
+        });
+        repeated_pattern.push(wgpu::BindGroupLayoutEntry {
+            binding: (2 * i + 1) as u32,
+            visibility: wgpu::ShaderStages::FRAGMENT,
+            ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
+            count: None,
+        });
+    }
+    let texture_bind_group_layout =
+        device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+            entries: &repeated_pattern[..],
+            label: Some("texture_bind_group_layout"),
+        });
+
+    let mut repeated_pattern = vec![];
+    for i in 0..textures.len() {
+        repeated_pattern.push(wgpu::BindGroupEntry {
+            binding: (2 * i) as u32,
+            resource: wgpu::BindingResource::TextureView(&textures[i].view),
+        });
+        repeated_pattern.push(wgpu::BindGroupEntry {
+            binding: (2 * i + 1) as u32,
+            resource: wgpu::BindingResource::Sampler(&textures[i].sampler),
+        });
+    }
+    let texture_bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
+        layout: &texture_bind_group_layout,
+        entries: &repeated_pattern[..],
+        label: Some("diffuse_bind_group"),
+    });
+    (texture_bind_group, texture_bind_group_layout)
 }
