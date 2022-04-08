@@ -132,7 +132,7 @@ impl Context {
         let texture = super::sprite::Texture::from_bytes(
             &device,
             &queue,
-            include_bytes!("../../assets/Enemy01/attack01.png"),
+            include_bytes!("../../assets/test-sprite.png"),
             "Texture",
         )
         .unwrap();
@@ -175,7 +175,7 @@ impl Context {
                 entry_point: "fs_main",
                 targets: &[wgpu::ColorTargetState {
                     format: config.format,
-                    blend: Some(wgpu::BlendState::REPLACE),
+                    blend: Some(wgpu::BlendState::ALPHA_BLENDING),
                     write_mask: wgpu::ColorWrites::ALL,
                 }],
             }),
@@ -261,7 +261,7 @@ impl Context {
             render_pass.set_pipeline(&self.render_pipeline);
             render_pass.set_bind_group(0, &self.texture_bind_group, &[]);
             render_pass.set_vertex_buffer(0, self.vertex_buffers.slice(..));
-            render_pass.draw(0..3, 0..1);
+            render_pass.draw(0..6, 0..1);
         }
 
         self.queue.submit(std::iter::once(encoder.finish()));

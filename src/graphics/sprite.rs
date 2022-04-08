@@ -26,16 +26,28 @@ pub struct Vertex {
 
 pub const VERTICES: &[Vertex] = &[
     Vertex {
-        position: [0.0, 0.5],
+        position: [-0.5, -0.5],
         texcoord: [0.0, 1.0],
     },
     Vertex {
-        position: [-0.5, -0.5],
-        texcoord: [1.0, 0.0],
+        position: [0.5, -0.5],
+        texcoord: [1.0, 1.0],
+    },
+    Vertex {
+        position: [-0.5, 0.5],
+        texcoord: [0.0, 0.0],
     },
     Vertex {
         position: [0.5, -0.5],
+        texcoord: [1.0, 1.0],
+    },
+    Vertex {
+        position: [-0.5, 0.5],
         texcoord: [0.0, 0.0],
+    },
+    Vertex {
+        position: [0.5, 0.5],
+        texcoord: [1.0, 0.0],
     },
 ];
 
