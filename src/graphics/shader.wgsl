@@ -12,6 +12,13 @@
 // along with game-testbed. If not, see <https://www.gnu.org/licenses/>.
 // 
 
+struct Camera {
+    x: f32;
+    y: f32;
+};
+[[group(1), binding(0)]]
+var<uniform> camera: Camera;
+
 struct VertexInput {
     [[location(0)]] position: vec2<f32>;
     [[location(1)]] texcoord: vec2<f32>;
@@ -28,7 +35,7 @@ fn vs_main(
 ) -> VertexOutput {
     var out: VertexOutput;
     out.texcoord = model.texcoord;
-    out.clip_position = vec4<f32>(model.position, 0.0, 1.0);
+    out.clip_position = vec4<f32>(model.position.x - camera.x, model.position.y - camera.y, 0.0, 1.0);
     return out;
 }
 

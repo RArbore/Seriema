@@ -43,6 +43,13 @@ pub const VERTICES: &[Vertex] = &[
     },
 ];
 
+#[repr(C)]
+#[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
+pub struct Camera {
+    pub x: f32,
+    pub y: f32,
+}
+
 pub struct Texture {
     pub texture: wgpu::Texture,
     pub view: wgpu::TextureView,

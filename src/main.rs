@@ -20,7 +20,6 @@ fn main() {
     let entity = world.add();
     world.insert(entity, ecs::Position { x: 0.0, y: 1.0 });
     world.insert(entity, ecs::Velocity { x: 2.0, y: 3.0 });
-    println!("world size: {}", world.size);
     world.systems.push(Box::new(
         ecs::print_position_and_velocity
             as fn(&mut ecs::Timer, (&mut ecs::Position, &mut ecs::Velocity)),
@@ -28,6 +27,5 @@ fn main() {
     world
         .systems
         .push(Box::new(ecs::print_fps as fn(&mut ecs::Timer)));
-    world.run();
     graphics::Graphics::new().run(move || world.run());
 }

@@ -38,6 +38,8 @@ struct Context {
     render_pipeline: wgpu::RenderPipeline,
     vertex_buffers: wgpu::Buffer,
     texture_bind_groups: Vec<wgpu::BindGroup>,
+    camera_buffer: wgpu::Buffer,
+    camera_bind_group: wgpu::BindGroup,
 }
 
 impl Graphics {
@@ -55,12 +57,12 @@ impl Graphics {
         }
     }
 
-    pub fn run<F: FnMut() + 'static>(mut self, mut tick: F) -> ! {
+    pub fn run<F: FnMut() -> (f32, f32) + 'static>(mut self, mut tick: F) -> ! {
         self.event_loop.run(move |event, _, control_flow| {
-            tick();
+            let (cx, cy) = tick();
             match event {
                 Event::RedrawRequested(window_id) if window_id == self.window.id() => {
-                    match self.context.render() {
+                    match self.context.render(cx, cy) {
                         Ok(_) => {}
                         Err(wgpu::SurfaceError::Lost) => self.context.resize(self.context.size),
                         Err(wgpu::SurfaceError::OutOfMemory) => *control_flow = ControlFlow::Exit,
@@ -135,12 +137,48 @@ impl Context {
             "../../assets/test-sprite2.png"
         );
 
+        let vertex_buffers = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("Vertex Buffers"),
+            contents: bytemuck::cast_slice(VERTICES),
+            usage: wgpu::BufferUsages::VERTEX,
+        });
+
+        let camera_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("Camera buffer"),
+            contents: bytemuck::cast_slice(&[Camera { x: 0.0, y: 0.0 }]),
+            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+        });
+
+        let camera_bind_group_layout =
+            device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+                entries: &[wgpu::BindGroupLayoutEntry {
+                    binding: 0,
+                    visibility: wgpu::ShaderStages::VERTEX,
+                    ty: wgpu::BindingType::Buffer {
+                        ty: wgpu::BufferBindingType::Uniform,
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
+                    },
+                    count: None,
+                }],
+                label: Some("camera_bind_group_layout"),
+            });
+
+        let camera_bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
+            layout: &camera_bind_group_layout,
+            entries: &[wgpu::BindGroupEntry {
+                binding: 0,
+                resource: camera_buffer.as_entire_binding(),
+            }],
+            label: Some("camera_bind_group"),
+        });
+
         let shader = device.create_shader_module(&include_wgsl!("shader.wgsl"));
         let render_pipeline_layout =
             device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
                 label: Some("Render Pipeline Layout"),
                 //bind_group_layouts: &texture_bind_group_layouts.iter().collect::<Vec<_>>(),
-                bind_group_layouts: &[&texture_bind_group_layouts[0]],
+                bind_group_layouts: &[&texture_bind_group_layouts[0], &camera_bind_group_layout],
                 push_constant_ranges: &[],
             });
         let render_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
@@ -193,12 +231,6 @@ impl Context {
             multiview: None,
         });
 
-        let vertex_buffers = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("Vertex Buffers"),
-            contents: bytemuck::cast_slice(VERTICES),
-            usage: wgpu::BufferUsages::VERTEX,
-        });
-
         Self {
             surface,
             device,
@@ -208,6 +240,8 @@ impl Context {
             render_pipeline,
             vertex_buffers,
             texture_bind_groups,
+            camera_buffer,
+            camera_bind_group,
         }
     }
 
@@ -224,7 +258,12 @@ impl Context {
         false
     }
 
-    fn render(&mut self) -> Result<(), wgpu::SurfaceError> {
+    fn render(&mut self, cx: f32, cy: f32) -> Result<(), wgpu::SurfaceError> {
+        self.queue.write_buffer(
+            &self.camera_buffer,
+            0,
+            bytemuck::cast_slice(&[Camera { x: cx, y: cy }]),
+        );
         let output = self.surface.get_current_texture()?;
         let view = output
             .texture
@@ -255,6 +294,8 @@ impl Context {
             });
             render_pass.set_pipeline(&self.render_pipeline);
             render_pass.set_vertex_buffer(0, self.vertex_buffers.slice(..));
+            render_pass.set_bind_group(1, &self.camera_bind_group, &[]);
+
             for i in 0..2 {
                 render_pass.set_bind_group(0, &self.texture_bind_groups[i], &[]);
                 render_pass.draw(0..4, 0..1);

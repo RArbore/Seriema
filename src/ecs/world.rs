@@ -65,7 +65,7 @@ impl World {
         vec[entity.index] = Some(component);
     }
 
-    pub fn run(&mut self) {
+    pub fn run(&mut self) -> (f32, f32) {
         self.resources.timer.update_dt();
         for system in self.systems.iter_mut() {
             for entity in 0..self.size {
@@ -76,5 +76,6 @@ impl World {
                 );
             }
         }
+        (0.5, 0.0)
     }
 }
