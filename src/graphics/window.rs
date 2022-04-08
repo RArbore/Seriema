@@ -180,7 +180,7 @@ impl Context {
                 }],
             }),
             primitive: wgpu::PrimitiveState {
-                topology: wgpu::PrimitiveTopology::TriangleList,
+                topology: wgpu::PrimitiveTopology::TriangleStrip,
                 strip_index_format: None,
                 front_face: wgpu::FrontFace::Ccw,
                 cull_mode: None,
@@ -261,7 +261,7 @@ impl Context {
             render_pass.set_pipeline(&self.render_pipeline);
             render_pass.set_bind_group(0, &self.texture_bind_group, &[]);
             render_pass.set_vertex_buffer(0, self.vertex_buffers.slice(..));
-            render_pass.draw(0..6, 0..1);
+            render_pass.draw(0..4, 0..1);
         }
 
         self.queue.submit(std::iter::once(encoder.finish()));
