@@ -58,10 +58,7 @@ impl Graphics {
         }
     }
 
-    pub fn run<F: FnMut() -> (Vec<super::sprite::Sprite>, f32, f32) + 'static>(
-        mut self,
-        mut tick: F,
-    ) -> ! {
+    pub fn run<F: FnMut() -> (RenderBatch, f32, f32) + 'static>(mut self, mut tick: F) -> ! {
         self.event_loop.run(move |event, _, control_flow| {
             let (sprites, cx, cy) = tick();
             match event {
@@ -263,7 +260,7 @@ impl Context {
         false
     }
 
-    fn render(&mut self, sprites: Vec<Sprite>, cx: f32, cy: f32) -> Result<(), wgpu::SurfaceError> {
+    fn render(&mut self, sprites: RenderBatch, cx: f32, cy: f32) -> Result<(), wgpu::SurfaceError> {
         self.queue.write_buffer(
             &self.camera_buffer,
             0,
@@ -301,8 +298,8 @@ impl Context {
             render_pass.set_vertex_buffer(0, self.vertex_buffers.slice(..));
             render_pass.set_bind_group(1, &self.camera_bind_group, &[]);
 
-            for sprite in sprites {
-                render_pass.set_bind_group(0, &self.texture_bind_groups[sprite.tex()], &[]);
+            for i in 0..sprites.len() {
+                render_pass.set_bind_group(0, &self.texture_bind_groups[i], &[]);
                 render_pass.draw(0..4, 0..1);
             }
         }

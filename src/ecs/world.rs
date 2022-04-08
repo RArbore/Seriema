@@ -67,7 +67,7 @@ impl World {
         vec[entity.index] = Some(component);
     }
 
-    pub fn run(&mut self) -> (Vec<Sprite>, f32, f32) {
+    pub fn run(&mut self) -> (RenderBatch, f32, f32) {
         self.resources.timer.update_dt();
         for system in self.systems.iter_mut() {
             for entity in 0..self.size {
@@ -78,6 +78,6 @@ impl World {
                 );
             }
         }
-        (vec![Sprite::TestSprite2(0)], 0.5, 0.0)
+        (vec![vec![(0, 0.0, 0.0)], vec![(0, 0.0, 0.0)]], 0.5, 0.0)
     }
 }

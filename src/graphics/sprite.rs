@@ -17,19 +17,22 @@ use wgpu::{BindGroup, BindGroupLayout, Device};
 use image::GenericImageView;
 use image::ImageResult;
 
+#[derive(PartialEq, Eq, Hash)]
 pub enum Sprite {
-    TestSprite1(u32),
-    TestSprite2(u32),
+    TestSprite1 = 0,
+    TestSprite2 = 1,
 }
 
 impl Sprite {
-    pub fn tex(&self) -> usize {
+    pub fn frames(&self) -> usize {
         match self {
-            Sprite::TestSprite1(_) => 0,
-            Sprite::TestSprite2(_) => 1,
+            Sprite::TestSprite1 => 1,
+            Sprite::TestSprite2 => 1,
         }
     }
 }
+
+pub type RenderBatch = Vec<Vec<(usize, f32, f32)>>;
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
