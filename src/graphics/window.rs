@@ -41,6 +41,7 @@ struct Context {
     texture_bind_groups: Vec<wgpu::BindGroup>,
     camera_buffer: wgpu::Buffer,
     camera_bind_group: wgpu::BindGroup,
+    instance_buffer: wgpu::Buffer,
 }
 
 impl Graphics {
@@ -188,22 +189,46 @@ impl Context {
             vertex: wgpu::VertexState {
                 module: &shader,
                 entry_point: "vs_main",
-                buffers: &[wgpu::VertexBufferLayout {
-                    array_stride: std::mem::size_of::<Vertex>() as wgpu::BufferAddress,
-                    step_mode: wgpu::VertexStepMode::Vertex,
-                    attributes: &[
-                        wgpu::VertexAttribute {
-                            offset: 0,
-                            shader_location: 0,
-                            format: wgpu::VertexFormat::Float32x2,
-                        },
-                        wgpu::VertexAttribute {
-                            offset: std::mem::size_of::<[f32; 2]>() as wgpu::BufferAddress,
-                            shader_location: 1,
-                            format: wgpu::VertexFormat::Float32x2,
-                        },
-                    ],
-                }],
+                buffers: &[
+                    wgpu::VertexBufferLayout {
+                        array_stride: std::mem::size_of::<Vertex>() as wgpu::BufferAddress,
+                        step_mode: wgpu::VertexStepMode::Vertex,
+                        attributes: &[
+                            wgpu::VertexAttribute {
+                                offset: 0,
+                                shader_location: 0,
+                                format: wgpu::VertexFormat::Float32x2,
+                            },
+                            wgpu::VertexAttribute {
+                                offset: std::mem::size_of::<[f32; 2]>() as wgpu::BufferAddress,
+                                shader_location: 1,
+                                format: wgpu::VertexFormat::Float32x2,
+                            },
+                        ],
+                    },
+                    wgpu::VertexBufferLayout {
+                        array_stride: std::mem::size_of::<super::sprite::Instance>()
+                            as wgpu::BufferAddress,
+                        step_mode: wgpu::VertexStepMode::Instance,
+                        attributes: &[
+                            wgpu::VertexAttribute {
+                                offset: 0,
+                                shader_location: 2,
+                                format: wgpu::VertexFormat::Float32,
+                            },
+                            wgpu::VertexAttribute {
+                                offset: std::mem::size_of::<f32>() as wgpu::BufferAddress,
+                                shader_location: 3,
+                                format: wgpu::VertexFormat::Float32,
+                            },
+                            wgpu::VertexAttribute {
+                                offset: std::mem::size_of::<[f32; 2]>() as wgpu::BufferAddress,
+                                shader_location: 4,
+                                format: wgpu::VertexFormat::Float32,
+                            },
+                        ],
+                    },
+                ],
             },
             fragment: Some(wgpu::FragmentState {
                 module: &shader,
@@ -232,6 +257,12 @@ impl Context {
             multiview: None,
         });
 
+        let instance_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("Instance Buffer"),
+            contents: bytemuck::cast_slice(vec![0.0; 1024].as_ref()),
+            usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
+        });
+
         Self {
             surface,
             device,
@@ -244,6 +275,7 @@ impl Context {
             texture_bind_groups,
             camera_buffer,
             camera_bind_group,
+            instance_buffer,
         }
     }
 
@@ -261,8 +293,6 @@ impl Context {
     }
 
     fn render(&mut self, sprites: RenderBatch, cx: f32, cy: f32) -> Result<(), wgpu::SurfaceError> {
-        self.queue
-            .write_buffer(&self.camera_buffer, 0, bytemuck::cast_slice(&[cx, cy]));
         let output = self.surface.get_current_texture()?;
         let view = output
             .texture
@@ -291,13 +321,29 @@ impl Context {
                 }],
                 depth_stencil_attachment: None,
             });
+            self.queue
+                .write_buffer(&self.camera_buffer, 0, bytemuck::cast_slice(&[cx, cy]));
             render_pass.set_pipeline(&self.render_pipeline);
             render_pass.set_vertex_buffer(0, self.vertex_buffers.slice(..));
+            render_pass.set_vertex_buffer(1, self.instance_buffer.slice(..));
             render_pass.set_bind_group(1, &self.camera_bind_group, &[]);
 
             for i in 0..sprites.len() {
+                let instances: Vec<_> = sprites[i]
+                    .iter()
+                    .map(|(texoffset, x, y)| super::sprite::Instance {
+                        texoffset: 0.0,
+                        x: *x,
+                        y: *y,
+                    })
+                    .collect();
+                self.queue.write_buffer(
+                    &self.instance_buffer,
+                    0,
+                    bytemuck::cast_slice(instances.as_ref()),
+                );
                 render_pass.set_bind_group(0, &self.texture_bind_groups[i], &[]);
-                render_pass.draw(0..4, 0..1);
+                render_pass.draw(0..4, 0..sprites[i].len() as _);
             }
         }
 

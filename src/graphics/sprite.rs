@@ -36,6 +36,14 @@ impl Sprite {
 pub type RenderBatch = Vec<Vec<(usize, f32, f32)>>;
 
 #[repr(C)]
+#[derive(Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]
+pub struct Instance {
+    pub texoffset: f32,
+    pub x: f32,
+    pub y: f32,
+}
+
+#[repr(C)]
 #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
 pub struct Vertex {
     position: [f32; 2],
