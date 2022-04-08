@@ -349,6 +349,8 @@ impl Context {
             render_pass.set_vertex_buffer(1, self.instance_buffer.slice(..));
             render_pass.set_bind_group(1, &self.camera_bind_group, &[]);
 
+            let mut buffer_offset: usize = 0;
+            let mut count: usize = 0;
             for i in 0..sprites.len() {
                 if sprites[i].len() == 0 {
                     continue;
@@ -367,11 +369,13 @@ impl Context {
                     .collect();
                 self.queue.write_buffer(
                     &self.instance_buffer,
-                    0,
+                    buffer_offset as u64,
                     bytemuck::cast_slice(instances.as_ref()),
                 );
                 render_pass.set_bind_group(0, &self.texture_bind_groups[i], &[]);
-                render_pass.draw(0..4, 0..sprites[i].len() as _);
+                render_pass.draw(0..4, (count as u32)..(count + instances.len()) as _);
+                count += instances.len();
+                buffer_offset += instances.len() * std::mem::size_of::<super::sprite::Instance>();
             }
         }
 
