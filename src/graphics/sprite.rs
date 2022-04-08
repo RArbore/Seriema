@@ -12,7 +12,7 @@
  * along with game-testbed. If not, see <https://www.gnu.org/licenses/>.
  */
 
-use wgpu::*;
+use wgpu::{BindGroup, BindGroupLayout, Device};
 
 use image::GenericImageView;
 use image::ImageResult;
@@ -54,10 +54,10 @@ impl Texture {
         device: &wgpu::Device,
         queue: &wgpu::Queue,
         bytes: &[u8],
-        label: &str,
+        label: Option<&str>,
     ) -> ImageResult<Self> {
         let img = image::load_from_memory(bytes)?;
-        Self::from_image(device, queue, &img, Some(label))
+        Self::from_image(device, queue, &img, label)
     }
 
     pub fn from_image(
@@ -165,4 +165,21 @@ pub fn create_texture_bind_group(
         label: Some("diffuse_bind_group"),
     });
     (texture_bind_group, texture_bind_group_layout)
+}
+
+macro_rules! create_textures {
+    ($a:expr, $b:expr, $($x:literal),+) => {
+        {
+            let mut textures_vec: Vec<super::sprite::Texture> = vec![];
+            let mut bind_groups_vec: Vec<BindGroup> = vec![];
+            let mut bind_group_layouts_vec: Vec<BindGroupLayout> = vec![];
+            $(
+                textures_vec.push(super::sprite::Texture::from_bytes($a, $b, include_bytes!($x), None).unwrap());
+                let (group, layout) = create_texture_bind_group(&[textures_vec.last().unwrap()], $a);
+                bind_groups_vec.push(group);
+                bind_group_layouts_vec.push(layout);
+            )*
+                (textures_vec, bind_groups_vec, bind_group_layouts_vec)
+        }
+    }
 }

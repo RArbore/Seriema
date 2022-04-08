@@ -12,6 +12,7 @@
  * along with game-testbed. If not, see <https://www.gnu.org/licenses/>.
  */
 
+#[macro_use]
 pub mod sprite;
 pub mod window;
 

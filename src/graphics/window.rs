@@ -37,8 +37,7 @@ struct Context {
     size: winit::dpi::PhysicalSize<u32>,
     render_pipeline: wgpu::RenderPipeline,
     vertex_buffers: wgpu::Buffer,
-    texture_bind_group: wgpu::BindGroup,
-    texture: wgpu::Texture,
+    texture_bind_groups: Vec<wgpu::BindGroup>,
 }
 
 impl Graphics {
@@ -129,22 +128,19 @@ impl Context {
         };
         surface.configure(&device, &config);
 
-        let texture = super::sprite::Texture::from_bytes(
+        let (textures, texture_bind_groups, texture_bind_group_layouts) = create_textures!(
             &device,
             &queue,
-            include_bytes!("../../assets/test-sprite.png"),
-            "Texture",
-        )
-        .unwrap();
-
-        let (texture_bind_group, texture_bind_group_layout) =
-            create_texture_bind_group(&[&texture], &device);
+            "../../assets/test-sprite1.png",
+            "../../assets/test-sprite2.png"
+        );
 
         let shader = device.create_shader_module(&include_wgsl!("shader.wgsl"));
         let render_pipeline_layout =
             device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
                 label: Some("Render Pipeline Layout"),
-                bind_group_layouts: &[&texture_bind_group_layout],
+                //bind_group_layouts: &texture_bind_group_layouts.iter().collect::<Vec<_>>(),
+                bind_group_layouts: &[&texture_bind_group_layouts[0]],
                 push_constant_ranges: &[],
             });
         let render_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
@@ -211,8 +207,7 @@ impl Context {
             size,
             render_pipeline,
             vertex_buffers,
-            texture_bind_group,
-            texture: texture.texture,
+            texture_bind_groups,
         }
     }
 
@@ -259,9 +254,11 @@ impl Context {
                 depth_stencil_attachment: None,
             });
             render_pass.set_pipeline(&self.render_pipeline);
-            render_pass.set_bind_group(0, &self.texture_bind_group, &[]);
             render_pass.set_vertex_buffer(0, self.vertex_buffers.slice(..));
-            render_pass.draw(0..4, 0..1);
+            for i in 0..2 {
+                render_pass.set_bind_group(0, &self.texture_bind_groups[i], &[]);
+                render_pass.draw(0..4, 0..1);
+            }
         }
 
         self.queue.submit(std::iter::once(encoder.finish()));
