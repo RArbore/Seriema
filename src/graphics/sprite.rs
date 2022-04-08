@@ -17,15 +17,16 @@ use wgpu::{BindGroup, BindGroupLayout, Device};
 use image::GenericImageView;
 use image::ImageResult;
 
+#[repr(usize)]
 #[derive(PartialEq, Eq, Hash)]
 pub enum Sprite {
-    TestSprite1 = 0,
-    TestSprite2 = 1,
+    TestSprite1,
+    TestSprite2,
 }
 
 impl Sprite {
-    pub fn frames(&self) -> usize {
-        match self {
+    pub fn frames(s: usize) -> usize {
+        match unsafe { std::mem::transmute(s) } {
             Sprite::TestSprite1 => 1,
             Sprite::TestSprite2 => 1,
         }
@@ -59,13 +60,6 @@ pub const VERTICES: &[Vertex] = &[
         texcoord: [1.0, 0.0],
     },
 ];
-
-#[repr(C)]
-#[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
-pub struct Camera {
-    pub x: f32,
-    pub y: f32,
-}
 
 pub struct Texture {
     pub texture: wgpu::Texture,

@@ -146,7 +146,7 @@ impl Context {
 
         let camera_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Camera buffer"),
-            contents: bytemuck::cast_slice(&[Camera { x: 0.0, y: 0.0 }]),
+            contents: bytemuck::cast_slice(&[0.0, 0.0]),
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
         });
 
@@ -261,11 +261,8 @@ impl Context {
     }
 
     fn render(&mut self, sprites: RenderBatch, cx: f32, cy: f32) -> Result<(), wgpu::SurfaceError> {
-        self.queue.write_buffer(
-            &self.camera_buffer,
-            0,
-            bytemuck::cast_slice(&[Camera { x: cx, y: cy }]),
-        );
+        self.queue
+            .write_buffer(&self.camera_buffer, 0, bytemuck::cast_slice(&[cx, cy]));
         let output = self.surface.get_current_texture()?;
         let view = output
             .texture
