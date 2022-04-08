@@ -37,6 +37,7 @@ struct Context {
     size: winit::dpi::PhysicalSize<u32>,
     render_pipeline: wgpu::RenderPipeline,
     vertex_buffers: wgpu::Buffer,
+    textures: Vec<super::sprite::Texture>,
     texture_bind_groups: Vec<wgpu::BindGroup>,
     camera_buffer: wgpu::Buffer,
     camera_bind_group: wgpu::BindGroup,
@@ -57,12 +58,15 @@ impl Graphics {
         }
     }
 
-    pub fn run<F: FnMut() -> (f32, f32) + 'static>(mut self, mut tick: F) -> ! {
+    pub fn run<F: FnMut() -> (Vec<super::sprite::Sprite>, f32, f32) + 'static>(
+        mut self,
+        mut tick: F,
+    ) -> ! {
         self.event_loop.run(move |event, _, control_flow| {
-            let (cx, cy) = tick();
+            let (sprites, cx, cy) = tick();
             match event {
                 Event::RedrawRequested(window_id) if window_id == self.window.id() => {
-                    match self.context.render(cx, cy) {
+                    match self.context.render(sprites, cx, cy) {
                         Ok(_) => {}
                         Err(wgpu::SurfaceError::Lost) => self.context.resize(self.context.size),
                         Err(wgpu::SurfaceError::OutOfMemory) => *control_flow = ControlFlow::Exit,
@@ -239,6 +243,7 @@ impl Context {
             size,
             render_pipeline,
             vertex_buffers,
+            textures,
             texture_bind_groups,
             camera_buffer,
             camera_bind_group,
@@ -258,7 +263,7 @@ impl Context {
         false
     }
 
-    fn render(&mut self, cx: f32, cy: f32) -> Result<(), wgpu::SurfaceError> {
+    fn render(&mut self, sprites: Vec<Sprite>, cx: f32, cy: f32) -> Result<(), wgpu::SurfaceError> {
         self.queue.write_buffer(
             &self.camera_buffer,
             0,
@@ -296,8 +301,8 @@ impl Context {
             render_pass.set_vertex_buffer(0, self.vertex_buffers.slice(..));
             render_pass.set_bind_group(1, &self.camera_bind_group, &[]);
 
-            for i in 0..2 {
-                render_pass.set_bind_group(0, &self.texture_bind_groups[i], &[]);
+            for sprite in sprites {
+                render_pass.set_bind_group(0, &self.texture_bind_groups[sprite.tex()], &[]);
                 render_pass.draw(0..4, 0..1);
             }
         }

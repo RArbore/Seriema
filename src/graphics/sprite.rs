@@ -17,6 +17,20 @@ use wgpu::{BindGroup, BindGroupLayout, Device};
 use image::GenericImageView;
 use image::ImageResult;
 
+pub enum Sprite {
+    TestSprite1(u32),
+    TestSprite2(u32),
+}
+
+impl Sprite {
+    pub fn tex(&self) -> usize {
+        match self {
+            Sprite::TestSprite1(_) => 0,
+            Sprite::TestSprite2(_) => 1,
+        }
+    }
+}
+
 #[repr(C)]
 #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
 pub struct Vertex {
@@ -54,6 +68,7 @@ pub struct Texture {
     pub texture: wgpu::Texture,
     pub view: wgpu::TextureView,
     pub sampler: wgpu::Sampler,
+    pub dimensions: (u32, u32),
 }
 
 impl Texture {
@@ -122,6 +137,7 @@ impl Texture {
             texture,
             view,
             sampler,
+            dimensions,
         })
     }
 }

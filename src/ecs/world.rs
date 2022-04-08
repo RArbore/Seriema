@@ -16,6 +16,8 @@ use super::components::*;
 use super::resources::*;
 use super::systems::*;
 
+use super::super::graphics::sprite::*;
+
 #[derive(Copy, Clone)]
 pub struct Entity {
     pub index: usize,
@@ -65,7 +67,7 @@ impl World {
         vec[entity.index] = Some(component);
     }
 
-    pub fn run(&mut self) -> (f32, f32) {
+    pub fn run(&mut self) -> (Vec<Sprite>, f32, f32) {
         self.resources.timer.update_dt();
         for system in self.systems.iter_mut() {
             for entity in 0..self.size {
@@ -76,6 +78,6 @@ impl World {
                 );
             }
         }
-        (0.5, 0.0)
+        (vec![Sprite::TestSprite2(0)], 0.5, 0.0)
     }
 }
