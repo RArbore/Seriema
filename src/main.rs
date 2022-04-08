@@ -18,14 +18,25 @@ mod graphics;
 fn main() {
     let mut world = ecs::World::new();
     let entity = world.add();
-    world.insert(entity, ecs::Position { x: 0.0, y: 1.0 });
-    world.insert(entity, ecs::Velocity { x: 2.0, y: 3.0 });
+    world.insert(entity, ecs::Position { x: 0.0, y: 0.0 });
+    world.insert(entity, ecs::Velocity { x: 100.0, y: 0.0 });
+    world.insert(
+        entity,
+        ecs::Sprite {
+            sprite: graphics::sprite::Sprite::TestSprite1,
+            frame: 1,
+            width: 10.0,
+            height: 10.0,
+        },
+    );
     world.systems.push(Box::new(
-        ecs::print_position_and_velocity
-            as fn(&mut ecs::Timer, (&mut ecs::Position, &mut ecs::Velocity)),
+        ecs::update_pos as fn(&mut ecs::Timer, (&mut ecs::Position, &mut ecs::Velocity)),
     ));
     world
         .systems
         .push(Box::new(ecs::print_fps as fn(&mut ecs::Timer)));
+    world.systems.push(Box::new(
+        ecs::render_sprite as fn(&mut ecs::RenderBatchRes, (&mut ecs::Position, &mut ecs::Sprite)),
+    ));
     graphics::Graphics::new().run(move || world.run());
 }

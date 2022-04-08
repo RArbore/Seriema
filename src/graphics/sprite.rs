@@ -18,7 +18,7 @@ use image::GenericImageView;
 use image::ImageResult;
 
 #[repr(usize)]
-#[derive(PartialEq, Eq, Hash)]
+#[derive(PartialEq, Eq, Hash, Clone, Copy)]
 pub enum Sprite {
     TestSprite1,
     TestSprite2,

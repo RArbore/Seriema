@@ -83,10 +83,19 @@ pub fn print_fps(timer: &mut Timer) {
 }
 
 system_impl!(A, B, (timer, Timer));
-pub fn print_position_and_velocity(timer: &mut Timer, query: (&mut Position, &mut Velocity)) {
-    println!(
-        "print_position_and_velocity: {} {} {} {}",
-        query.0.x, query.0.y, query.1.x, query.1.y,
+pub fn update_pos(timer: &mut Timer, query: (&mut Position, &mut Velocity)) {
+    query.0.x += query.1.x * timer.dt();
+    query.0.y += query.1.y * timer.dt();
+}
+
+system_impl!(A, B, (render_batch_res, RenderBatchRes));
+pub fn render_sprite(render_batch: &mut RenderBatchRes, query: (&mut Position, &mut Sprite)) {
+    render_batch.insert(
+        query.1.sprite,
+        query.1.frame,
+        query.0.x,
+        query.0.y,
+        query.1.width,
+        query.1.height,
     );
-    query.0.x += timer.dt();
 }

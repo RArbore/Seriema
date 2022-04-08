@@ -14,6 +14,8 @@
 
 use super::world::*;
 
+use super::super::graphics::*;
+
 pub trait Component {
     fn get_host_vec(components: &mut Components) -> &mut Vec<Option<Self>>
     where
@@ -39,5 +41,18 @@ pub struct Velocity {
 impl Component for Velocity {
     fn get_host_vec(components: &mut Components) -> &mut Vec<Option<Velocity>> {
         &mut components.velocities
+    }
+}
+
+pub struct Sprite {
+    pub sprite: sprite::Sprite,
+    pub frame: usize,
+    pub width: f32,
+    pub height: f32,
+}
+
+impl Component for Sprite {
+    fn get_host_vec(components: &mut Components) -> &mut Vec<Option<Sprite>> {
+        &mut components.sprites
     }
 }

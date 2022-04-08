@@ -16,7 +16,7 @@ use super::components::*;
 use super::resources::*;
 use super::systems::*;
 
-use super::super::graphics::sprite::*;
+use super::super::graphics::sprite::RenderBatch;
 
 #[derive(Copy, Clone)]
 pub struct Entity {
@@ -26,6 +26,7 @@ pub struct Entity {
 pub struct Components {
     pub positions: Vec<Option<Position>>,
     pub velocities: Vec<Option<Velocity>>,
+    pub sprites: Vec<Option<Sprite>>,
 }
 
 pub struct Resources {
@@ -46,6 +47,7 @@ impl World {
             components: Components {
                 positions: Vec::new(),
                 velocities: Vec::new(),
+                sprites: Vec::new(),
             },
             size: 0,
             systems: Vec::new(),
@@ -59,6 +61,7 @@ impl World {
     pub fn add(&mut self) -> Entity {
         self.components.positions.push(None);
         self.components.velocities.push(None);
+        self.components.sprites.push(None);
         let entity = Entity { index: self.size };
         self.size += 1;
         entity
