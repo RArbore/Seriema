@@ -27,20 +27,23 @@ pub enum Sprite {
 impl Sprite {
     pub fn frames(s: usize) -> usize {
         match unsafe { std::mem::transmute(s) } {
-            Sprite::TestSprite1 => 1,
+            Sprite::TestSprite1 => 2,
             Sprite::TestSprite2 => 1,
         }
     }
 }
 
-pub type RenderBatch = Vec<Vec<(usize, f32, f32)>>;
+pub type RenderBatch = Vec<Vec<(usize, f32, f32, f32, f32)>>;
 
 #[repr(C)]
 #[derive(Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]
 pub struct Instance {
     pub texoffset: f32,
+    pub texwidth: f32,
     pub x: f32,
     pub y: f32,
+    pub w: f32,
+    pub h: f32,
 }
 
 #[repr(C)]

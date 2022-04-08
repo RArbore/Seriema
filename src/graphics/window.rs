@@ -226,6 +226,21 @@ impl Context {
                                 shader_location: 4,
                                 format: wgpu::VertexFormat::Float32,
                             },
+                            wgpu::VertexAttribute {
+                                offset: std::mem::size_of::<[f32; 3]>() as wgpu::BufferAddress,
+                                shader_location: 5,
+                                format: wgpu::VertexFormat::Float32,
+                            },
+                            wgpu::VertexAttribute {
+                                offset: std::mem::size_of::<[f32; 4]>() as wgpu::BufferAddress,
+                                shader_location: 6,
+                                format: wgpu::VertexFormat::Float32,
+                            },
+                            wgpu::VertexAttribute {
+                                offset: std::mem::size_of::<[f32; 5]>() as wgpu::BufferAddress,
+                                shader_location: 7,
+                                format: wgpu::VertexFormat::Float32,
+                            },
                         ],
                     },
                 ],
@@ -321,20 +336,33 @@ impl Context {
                 }],
                 depth_stencil_attachment: None,
             });
-            self.queue
-                .write_buffer(&self.camera_buffer, 0, bytemuck::cast_slice(&[cx, cy]));
+            self.queue.write_buffer(
+                &self.camera_buffer,
+                0,
+                bytemuck::cast_slice(&[
+                    cx / (self.size.width as f32),
+                    cy / (self.size.height as f32),
+                ]),
+            );
             render_pass.set_pipeline(&self.render_pipeline);
             render_pass.set_vertex_buffer(0, self.vertex_buffers.slice(..));
             render_pass.set_vertex_buffer(1, self.instance_buffer.slice(..));
             render_pass.set_bind_group(1, &self.camera_bind_group, &[]);
 
             for i in 0..sprites.len() {
+                if sprites[i].len() == 0 {
+                    continue;
+                }
                 let instances: Vec<_> = sprites[i]
                     .iter()
-                    .map(|(texoffset, x, y)| super::sprite::Instance {
-                        texoffset: 0.0,
-                        x: *x,
-                        y: *y,
+                    .map(|(frame, x, y, w, h)| super::sprite::Instance {
+                        texoffset: *frame as f32 / Sprite::frames(i) as f32,
+                        texwidth: 1.0 / Sprite::frames(i) as f32,
+                        x: *x / self.size.width as f32,
+                        y: *y / self.size.height as f32,
+                        w: self.textures[i].dimensions.0 as f32 / Sprite::frames(i) as f32 * *w
+                            / self.size.width as f32,
+                        h: self.textures[i].dimensions.1 as f32 * *h / self.size.height as f32,
                     })
                     .collect();
                 self.queue.write_buffer(
