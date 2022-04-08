@@ -14,6 +14,8 @@
 
 use std::time::Instant;
 
+use super::super::graphics::sprite::*;
+
 pub struct Timer {
     start: Instant,
     stopwatch: u32,
@@ -40,5 +42,21 @@ impl Timer {
 
     pub fn micros(&self) -> u32 {
         self.start.elapsed().as_micros() as u32
+    }
+}
+
+pub struct RenderBatchRes {
+    pub render_batch: *mut RenderBatch,
+}
+
+impl RenderBatchRes {
+    pub fn new(render_batch: *mut RenderBatch) -> Self {
+        RenderBatchRes { render_batch }
+    }
+
+    pub fn insert(&mut self, sprite: Sprite, frame: usize, x: f32, y: f32, w: f32, h: f32) {
+        unsafe {
+            (*self.render_batch)[sprite as usize].push((frame, x, y, w, h));
+        }
     }
 }

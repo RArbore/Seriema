@@ -30,6 +30,7 @@ pub struct Components {
 
 pub struct Resources {
     pub timer: Timer,
+    pub render_batch_res: RenderBatchRes,
 }
 
 pub struct World {
@@ -50,6 +51,7 @@ impl World {
             systems: Vec::new(),
             resources: Resources {
                 timer: Timer::new(),
+                render_batch_res: RenderBatchRes::new(0 as *mut RenderBatch),
             },
         }
     }
@@ -69,6 +71,8 @@ impl World {
 
     pub fn run(&mut self) -> (RenderBatch, f32, f32) {
         self.resources.timer.update_dt();
+        let mut render_batch: RenderBatch = vec![vec![]; 2];
+        self.resources.render_batch_res = RenderBatchRes::new(&mut render_batch);
         for system in self.systems.iter_mut() {
             for entity in 0..self.size {
                 system.run(
@@ -78,28 +82,6 @@ impl World {
                 );
             }
         }
-        (
-            vec![
-                vec![(0, 0.0, 0.0, 10.0, 10.0), (1, 0.0, 160.0, 10.0, 10.0)],
-                vec![
-                    (
-                        0,
-                        self.resources.timer.micros() as f32 / 10000.0,
-                        0.0,
-                        10.0,
-                        10.0,
-                    ),
-                    (
-                        0,
-                        self.resources.timer.micros() as f32 / 10000.0,
-                        160.0,
-                        10.0,
-                        10.0,
-                    ),
-                ],
-            ],
-            0.0,
-            0.0,
-        )
+        (render_batch, 0.0, 0.0)
     }
 }
