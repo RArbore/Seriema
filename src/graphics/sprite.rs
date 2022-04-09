@@ -17,8 +17,10 @@ use wgpu::{BindGroup, BindGroupLayout, Device};
 use image::GenericImageView;
 use image::ImageResult;
 
+pub const NUM_TEXTURES: usize = 2;
+
 #[repr(usize)]
-#[derive(PartialEq, Eq, Hash, Clone, Copy)]
+#[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]
 pub enum Sprite {
     TestSprite1,
     TestSprite2,

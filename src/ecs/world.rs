@@ -16,7 +16,8 @@ use super::components::*;
 use super::resources::*;
 use super::systems::*;
 
-use super::super::graphics::sprite::RenderBatch;
+use super::super::graphics::controls::UserInput;
+use super::super::graphics::sprite::{RenderBatch, NUM_TEXTURES};
 
 #[derive(Copy, Clone)]
 pub struct Entity {
@@ -27,11 +28,13 @@ pub struct Components {
     pub positions: Vec<Option<Position>>,
     pub velocities: Vec<Option<Velocity>>,
     pub sprites: Vec<Option<Sprite>>,
+    pub players: Vec<Option<Player>>,
 }
 
 pub struct Resources {
     pub timer: Timer,
     pub render_batch_res: RenderBatchRes,
+    pub user_input: UserInput,
 }
 
 pub struct World {
@@ -48,12 +51,14 @@ impl World {
                 positions: Vec::new(),
                 velocities: Vec::new(),
                 sprites: Vec::new(),
+                players: Vec::new(),
             },
             size: 0,
             systems: Vec::new(),
             resources: Resources {
                 timer: Timer::new(),
                 render_batch_res: RenderBatchRes::new(0 as *mut RenderBatch),
+                user_input: UserInput::new(),
             },
         }
     }
@@ -62,6 +67,7 @@ impl World {
         self.components.positions.push(None);
         self.components.velocities.push(None);
         self.components.sprites.push(None);
+        self.components.players.push(None);
         let entity = Entity { index: self.size };
         self.size += 1;
         entity
@@ -72,10 +78,11 @@ impl World {
         vec[entity.index] = Some(component);
     }
 
-    pub fn run(&mut self) -> (RenderBatch, f32, f32) {
+    pub fn run(&mut self, input: UserInput) -> (RenderBatch, f32, f32) {
         self.resources.timer.update_dt();
-        let mut render_batch: RenderBatch = vec![vec![]; 2];
+        let mut render_batch: RenderBatch = vec![vec![]; NUM_TEXTURES];
         self.resources.render_batch_res = RenderBatchRes::new(&mut render_batch);
+        self.resources.user_input = input;
         for system in self.systems.iter_mut() {
             for entity in 0..self.size {
                 system.run(

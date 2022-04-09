@@ -22,6 +22,7 @@ pub trait Component {
         Self: Sized;
 }
 
+#[derive(Debug)]
 pub struct Position {
     pub x: f32,
     pub y: f32,
@@ -33,6 +34,7 @@ impl Component for Position {
     }
 }
 
+#[derive(Debug)]
 pub struct Velocity {
     pub x: f32,
     pub y: f32,
@@ -44,6 +46,7 @@ impl Component for Velocity {
     }
 }
 
+#[derive(Debug)]
 pub struct Sprite {
     pub sprite: sprite::Sprite,
     pub frame: usize,
@@ -54,5 +57,14 @@ pub struct Sprite {
 impl Component for Sprite {
     fn get_host_vec(components: &mut Components) -> &mut Vec<Option<Sprite>> {
         &mut components.sprites
+    }
+}
+
+#[derive(Debug)]
+pub struct Player {}
+
+impl Component for Player {
+    fn get_host_vec(components: &mut Components) -> &mut Vec<Option<Player>> {
+        &mut components.players
     }
 }

@@ -30,11 +30,12 @@ pub struct Controller {
     scheme: ControllerScheme,
 }
 
+#[derive(Clone, Copy, Debug)]
 pub struct UserInput {
-    jump: bool,
-    crouch: bool,
-    left: bool,
-    right: bool,
+    pub jump: bool,
+    pub crouch: bool,
+    pub left: bool,
+    pub right: bool,
 }
 
 impl Controller {
@@ -79,6 +80,17 @@ impl Controller {
                 left: self.pressed[left_key as usize],
                 right: self.pressed[right_key as usize],
             },
+        }
+    }
+}
+
+impl UserInput {
+    pub fn new() -> Self {
+        UserInput {
+            jump: false,
+            crouch: false,
+            left: false,
+            right: false,
         }
     }
 }

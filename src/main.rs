@@ -37,6 +37,20 @@ fn main() {
             },
         );
     }
+    let entity = world.add();
+    world.insert(entity, ecs::Position { x: 0.0, y: 0.0 });
+    world.insert(entity, ecs::Velocity { x: 0.0, y: 0.0 });
+    world.insert(
+        entity,
+        ecs::Sprite {
+            sprite: graphics::sprite::Sprite::TestSprite2,
+            frame: 0,
+            width: 8.0,
+            height: 8.0,
+        },
+    );
+    world.insert(entity, ecs::Player {});
+
     world.systems.push(Box::new(
         ecs::update_pos as fn(&mut ecs::Timer, (&mut ecs::Position, &mut ecs::Velocity)),
     ));
@@ -46,5 +60,14 @@ fn main() {
     world.systems.push(Box::new(
         ecs::render_sprite as fn(&mut ecs::RenderBatchRes, (&mut ecs::Position, &mut ecs::Sprite)),
     ));
-    graphics::Graphics::new().run(move || world.run());
+    world.systems.push(Box::new(
+        ecs::player_system
+            as fn(
+                timer: &mut ecs::Timer,
+                input: &mut graphics::UserInput,
+                query: (&mut ecs::Velocity, &mut ecs::Player),
+            ),
+    ));
+
+    graphics::Graphics::new().run(move |user_input| world.run(user_input));
 }

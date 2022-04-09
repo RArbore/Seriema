@@ -16,6 +16,8 @@ use super::components::*;
 use super::resources::*;
 use super::world::*;
 
+use super::super::graphics::controls::UserInput;
+
 pub trait Query {
     fn matches(components: &mut Components, entity: Entity) -> Option<Self>
     where
@@ -58,7 +60,7 @@ macro_rules! system_impl {
     };
     ($($x:ident),*, $(($y:ident, $z: ty)),*) => {
         #[allow(unused_parens, non_snake_case)]
-        impl<$($x: Component),*> System for fn(($(&mut $z),*), ($(&mut $x),*)) {
+        impl<$($x: Component),*> System for fn($(&mut $z),*, ($(&mut $x),*)) {
             fn run(&self, components: &mut Components, entity: Entity, resources: &mut Resources) {
                 let matches_option = <($(&mut $x),*)>::matches(components, entity);
                 if let Some(matches) = matches_option {
@@ -100,4 +102,24 @@ pub fn render_sprite(render_batch: &mut RenderBatchRes, query: (&mut Position, &
         query.1.width,
         query.1.height,
     );
+}
+
+system_impl!(A, B, (timer, Timer), (user_input, UserInput));
+pub fn player_system(
+    timer: &mut Timer,
+    user_input: &mut UserInput,
+    query: (&mut Velocity, &mut Player),
+) {
+    if user_input.jump {
+        query.0.y += 100.0 * timer.dt();
+    }
+    if user_input.crouch {
+        query.0.y -= 100.0 * timer.dt();
+    }
+    if user_input.left {
+        query.0.x -= 100.0 * timer.dt();
+    }
+    if user_input.right {
+        query.0.x += 100.0 * timer.dt();
+    }
 }

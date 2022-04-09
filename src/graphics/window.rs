@@ -69,9 +69,9 @@ impl Graphics {
         }
     }
 
-    pub fn run<F: FnMut() -> (RenderBatch, f32, f32) + 'static>(mut self, mut tick: F) {
+    pub fn run<F: FnMut(UserInput) -> (RenderBatch, f32, f32) + 'static>(mut self, mut tick: F) {
         self.event_loop.run(move |event, _, control_flow| {
-            let (sprites, cx, cy) = tick();
+            let (sprites, cx, cy) = tick(self.controller.get_user_input());
             match event {
                 Event::MainEventsCleared => {
                     self.window.request_redraw();
