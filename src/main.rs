@@ -17,13 +17,13 @@ mod graphics;
 
 fn main() {
     let mut world = ecs::World::new();
-    for i in 0..100 {
+    for i in 0..10000 {
         let entity = world.add();
         world.insert(
             entity,
             ecs::Position {
-                x: -800.0 + ((i / 10) as f32) * 160.0,
-                y: -800.0 + ((i % 10) as f32) * 160.0,
+                x: -2000.0 + ((i / 100) as f32) * 64.0,
+                y: -2000.0 + ((i % 100) as f32) * 64.0,
             },
         );
         world.insert(entity, ecs::Velocity { x: 100.0, y: 0.0 });
@@ -32,8 +32,8 @@ fn main() {
             ecs::Sprite {
                 sprite: graphics::sprite::Sprite::TestSprite1,
                 frame: i % 2,
-                width: 10.0,
-                height: 10.0,
+                width: 4.0,
+                height: 4.0,
             },
         );
     }

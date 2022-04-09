@@ -79,7 +79,9 @@ macro_rules! system_impl {
 
 system_impl!((timer, Timer));
 pub fn print_fps(timer: &mut Timer) {
-    println!("FPS: {}", 1.0 / timer.dt());
+    if timer.second_border() {
+        println!("FPS: {}", 1.0 / timer.dt());
+    }
 }
 
 system_impl!(A, B, (timer, Timer));

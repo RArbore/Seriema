@@ -274,7 +274,7 @@ impl Context {
 
         let instance_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Instance Buffer"),
-            contents: bytemuck::cast_slice(vec![0.0; 1024].as_ref()),
+            contents: bytemuck::cast_slice(vec![0.0; 65536].as_ref()),
             usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
         });
 
@@ -349,7 +349,6 @@ impl Context {
             render_pass.set_vertex_buffer(1, self.instance_buffer.slice(..));
             render_pass.set_bind_group(1, &self.camera_bind_group, &[]);
 
-            let mut buffer_offset: usize = 0;
             let mut count: usize = 0;
             for i in 0..sprites.len() {
                 if sprites[i].len() == 0 {
@@ -366,16 +365,21 @@ impl Context {
                             / self.size.width as f32,
                         h: self.textures[i].dimensions.1 as f32 * *h / self.size.height as f32,
                     })
+                    .filter(|inst| {
+                        inst.x - 0.5 * inst.w < 1.0
+                            && inst.x + 0.5 * inst.w > -1.0
+                            && inst.y - 0.5 * inst.h < 1.0
+                            && inst.y + 0.5 * inst.h > -1.0
+                    })
                     .collect();
                 self.queue.write_buffer(
                     &self.instance_buffer,
-                    buffer_offset as u64,
+                    (count * std::mem::size_of::<super::sprite::Instance>()) as u64,
                     bytemuck::cast_slice(instances.as_ref()),
                 );
                 render_pass.set_bind_group(0, &self.texture_bind_groups[i], &[]);
                 render_pass.draw(0..4, (count as u32)..(count + instances.len()) as _);
                 count += instances.len();
-                buffer_offset += instances.len() * std::mem::size_of::<super::sprite::Instance>();
             }
         }
 

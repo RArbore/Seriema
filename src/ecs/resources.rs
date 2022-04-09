@@ -20,6 +20,7 @@ pub struct Timer {
     start: Instant,
     stopwatch: u32,
     dt: f32,
+    second_border: bool,
 }
 
 impl Timer {
@@ -28,12 +29,15 @@ impl Timer {
             start: Instant::now(),
             stopwatch: 0,
             dt: 0.0,
+            second_border: false,
         }
     }
 
     pub fn update_dt(&mut self) {
         self.dt = ((self.micros() - self.stopwatch) as f32) / 1000000.0;
+        let before = self.stopwatch;
         self.stopwatch = self.micros();
+        self.second_border = (self.stopwatch % 1000000) < (before % 1000000);
     }
 
     pub fn dt(&self) -> f32 {
@@ -42,6 +46,12 @@ impl Timer {
 
     pub fn micros(&self) -> u32 {
         self.start.elapsed().as_micros() as u32
+    }
+
+    pub fn second_border(&mut self) -> bool {
+        let second_border = self.second_border;
+        self.second_border = false;
+        second_border
     }
 }
 
