@@ -50,8 +50,14 @@ impl Graphics {
     pub fn new() -> Self {
         env_logger::init();
         let event_loop = EventLoop::new();
-        let controller = Controller::new();
+        let controller = Controller::new(ControllerScheme::KeyboardMouse {
+            jump_key: VirtualKeyCode::W,
+            crouch_key: VirtualKeyCode::S,
+            left_key: VirtualKeyCode::A,
+            right_key: VirtualKeyCode::D,
+        });
         let window = WindowBuilder::new()
+            .with_resizable(false)
             .build(&event_loop)
             .expect("Could not create a window.");
         let context = pollster::block_on(Context::new(&window));
