@@ -21,10 +21,12 @@ use winit::{
 use wgpu::util::DeviceExt;
 use wgpu::*;
 
+use super::controls::*;
 use super::sprite::*;
 
 pub struct Graphics {
     event_loop: EventLoop<()>,
+    controller: Controller,
     window: Window,
     context: Context,
 }
@@ -48,29 +50,23 @@ impl Graphics {
     pub fn new() -> Self {
         env_logger::init();
         let event_loop = EventLoop::new();
+        let controller = Controller::new();
         let window = WindowBuilder::new()
             .build(&event_loop)
             .expect("Could not create a window.");
         let context = pollster::block_on(Context::new(&window));
         Graphics {
             event_loop,
+            controller,
             window,
             context,
         }
     }
 
-    pub fn run<F: FnMut() -> (RenderBatch, f32, f32) + 'static>(mut self, mut tick: F) -> ! {
+    pub fn run<F: FnMut() -> (RenderBatch, f32, f32) + 'static>(mut self, mut tick: F) {
         self.event_loop.run(move |event, _, control_flow| {
             let (sprites, cx, cy) = tick();
             match event {
-                Event::RedrawRequested(window_id) if window_id == self.window.id() => {
-                    match self.context.render(sprites, cx, cy) {
-                        Ok(_) => {}
-                        Err(wgpu::SurfaceError::Lost) => self.context.resize(self.context.size),
-                        Err(wgpu::SurfaceError::OutOfMemory) => *control_flow = ControlFlow::Exit,
-                        Err(e) => eprintln!("{:?}", e),
-                    }
-                }
                 Event::MainEventsCleared => {
                     self.window.request_redraw();
                 }
@@ -78,7 +74,7 @@ impl Graphics {
                     ref event,
                     window_id,
                 } if window_id == self.window.id() => {
-                    if !self.context.input(event) {
+                    if !self.context.input(&mut self.controller, event) {
                         match event {
                             WindowEvent::Resized(physical_size) => {
                                 self.context.resize(*physical_size);
@@ -92,7 +88,13 @@ impl Graphics {
                     }
                 }
                 _ => {}
-            }
+            };
+            match self.context.render(sprites, cx, cy) {
+                Ok(_) => {}
+                Err(wgpu::SurfaceError::Lost) => self.context.resize(self.context.size),
+                Err(wgpu::SurfaceError::OutOfMemory) => *control_flow = ControlFlow::Exit,
+                Err(e) => eprintln!("{:?}", e),
+            };
         });
     }
 }
@@ -303,8 +305,8 @@ impl Context {
         }
     }
 
-    fn input(&mut self, _event: &WindowEvent) -> bool {
-        false
+    fn input(&mut self, controller: &mut Controller, event: &WindowEvent) -> bool {
+        controller.process_event(event)
     }
 
     fn render(&mut self, sprites: RenderBatch, cx: f32, cy: f32) -> Result<(), wgpu::SurfaceError> {
@@ -326,9 +328,9 @@ impl Context {
                     resolve_target: None,
                     ops: wgpu::Operations {
                         load: wgpu::LoadOp::Clear(wgpu::Color {
-                            r: 0.1,
-                            g: 0.2,
-                            b: 0.3,
+                            r: 0.0,
+                            g: 0.0,
+                            b: 0.0,
                             a: 1.0,
                         }),
                         store: true,
