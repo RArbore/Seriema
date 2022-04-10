@@ -88,32 +88,36 @@ impl Controller {
         }
     }
 
-    pub fn get_user_input(&self) -> UserInput {
+    pub fn get_user_input(&self, ax: f32, ay: f32) -> UserInput {
         match self.scheme {
             ControllerScheme::KeyboardMouse {
                 jump_key,
                 crouch_key,
                 left_key,
                 right_key,
-            } => UserInput {
-                jump: self.pressed[jump_key as usize],
-                crouch: self.pressed[crouch_key as usize],
-                left: self.pressed[left_key as usize],
-                right: self.pressed[right_key as usize],
-                angle: if self.cursor_x == 0.0 {
-                    if self.cursor_y > 0.0 {
-                        std::f32::consts::PI / 2.0
+            } => {
+                let adjusted_x = self.cursor_x as f32 - ax;
+                let adjusted_y = self.cursor_y as f32 - ay;
+                UserInput {
+                    jump: self.pressed[jump_key as usize],
+                    crouch: self.pressed[crouch_key as usize],
+                    left: self.pressed[left_key as usize],
+                    right: self.pressed[right_key as usize],
+                    angle: if adjusted_x == 0.0 {
+                        if adjusted_y > 0.0 {
+                            std::f32::consts::PI / 2.0
+                        } else {
+                            3.0 * std::f32::consts::PI / 2.0
+                        }
                     } else {
-                        3.0 * std::f32::consts::PI / 2.0
-                    }
-                } else {
-                    if self.cursor_x < 0.0 {
-                        (self.cursor_y / self.cursor_x).atan() as f32 + std::f32::consts::PI
-                    } else {
-                        (self.cursor_y / self.cursor_x).atan() as f32
-                    }
-                },
-            },
+                        if adjusted_x < 0.0 {
+                            (adjusted_y / adjusted_x).atan() + std::f32::consts::PI
+                        } else {
+                            (adjusted_y / adjusted_x).atan()
+                        }
+                    },
+                }
+            }
         }
     }
 }

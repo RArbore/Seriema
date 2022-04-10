@@ -68,7 +68,12 @@ impl Graphics {
         }
     }
 
-    pub fn run<F: FnMut(UserInput) -> (RenderBatch, f32, f32) + 'static>(mut self, mut tick: F) {
+    pub fn run<F: FnMut(UserInput) -> (RenderBatch, f32, f32, f32, f32) + 'static>(
+        mut self,
+        mut tick: F,
+    ) {
+        let mut p_ax = 0.0;
+        let mut p_ay = 0.0;
         self.event_loop.run(move |event, _, control_flow| {
             *control_flow = ControlFlow::Poll;
             match event {
@@ -96,13 +101,16 @@ impl Graphics {
                     }
                 }
                 Event::RedrawRequested(window_id) if window_id == self.window.id() => {
-                    let (sprites, cx, cy) = tick(self.controller.get_user_input());
+                    let (sprites, cx, cy, ax, ay) =
+                        tick(self.controller.get_user_input(p_ax, p_ay));
                     match self.context.render(sprites, cx, cy) {
                         Ok(_) => {}
                         Err(wgpu::SurfaceError::Lost) => self.context.resize(self.context.size),
                         Err(wgpu::SurfaceError::OutOfMemory) => *control_flow = ControlFlow::Exit,
                         Err(e) => eprintln!("{:?}", e),
                     };
+                    p_ax = ax;
+                    p_ay = ay;
                 }
                 _ => {}
             };

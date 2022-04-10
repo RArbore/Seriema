@@ -78,7 +78,7 @@ impl World {
         vec[entity.index] = Some(component);
     }
 
-    pub fn run(&mut self, input: UserInput) -> (RenderBatch, f32, f32) {
+    pub fn run(&mut self, input: UserInput) -> (RenderBatch, f32, f32, f32, f32) {
         self.resources.timer.update_dt();
         let mut render_batch: RenderBatch = vec![vec![]; NUM_TEXTURES];
         self.resources.render_batch_res = RenderBatchRes::new(&mut render_batch);
@@ -92,6 +92,6 @@ impl World {
                 );
             }
         }
-        (render_batch, 0.0, 0.0)
+        (render_batch, 0.0, 0.0, 0.0, 0.0)
     }
 }
