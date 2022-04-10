@@ -36,7 +36,9 @@ fn main() {
                 height: 4.0,
             },
         );
+        world.insert(entity, ecs::Player {});
     }
+
     let entity = world.add();
     world.insert(entity, ecs::Position { x: 0.0, y: 0.0 });
     world.insert(entity, ecs::Velocity { x: 0.0, y: 0.0 });
@@ -69,5 +71,5 @@ fn main() {
             ),
     ));
 
-    graphics::Graphics::new().run(move |user_input| world.run(user_input));
+    pollster::block_on(graphics::Graphics::new()).run(move |user_input| world.run(user_input));
 }

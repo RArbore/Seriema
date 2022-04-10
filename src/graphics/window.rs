@@ -47,7 +47,7 @@ struct Context {
 }
 
 impl Graphics {
-    pub fn new() -> Self {
+    pub async fn new() -> Self {
         env_logger::init();
         let event_loop = EventLoop::new();
         let controller = Controller::new(ControllerScheme::KeyboardMouse {
@@ -57,10 +57,9 @@ impl Graphics {
             right_key: VirtualKeyCode::D,
         });
         let window = WindowBuilder::new()
-            .with_resizable(false)
             .build(&event_loop)
             .expect("Could not create a window.");
-        let context = pollster::block_on(Context::new(&window));
+        let context = Context::new(&window).await;
         Graphics {
             event_loop,
             controller,
@@ -71,11 +70,15 @@ impl Graphics {
 
     pub fn run<F: FnMut(UserInput) -> (RenderBatch, f32, f32) + 'static>(mut self, mut tick: F) {
         self.event_loop.run(move |event, _, control_flow| {
-            let (sprites, cx, cy) = tick(self.controller.get_user_input());
+            *control_flow = ControlFlow::Poll;
             match event {
                 Event::MainEventsCleared => {
                     self.window.request_redraw();
                 }
+                Event::DeviceEvent {
+                    event: DeviceEvent::MouseMotion { delta },
+                    ..
+                } => {}
                 Event::WindowEvent {
                     ref event,
                     window_id,
@@ -93,13 +96,16 @@ impl Graphics {
                         }
                     }
                 }
+                Event::RedrawRequested(window_id) if window_id == self.window.id() => {
+                    let (sprites, cx, cy) = tick(self.controller.get_user_input());
+                    match self.context.render(sprites, cx, cy) {
+                        Ok(_) => {}
+                        Err(wgpu::SurfaceError::Lost) => self.context.resize(self.context.size),
+                        Err(wgpu::SurfaceError::OutOfMemory) => *control_flow = ControlFlow::Exit,
+                        Err(e) => eprintln!("{:?}", e),
+                    };
+                }
                 _ => {}
-            };
-            match self.context.render(sprites, cx, cy) {
-                Ok(_) => {}
-                Err(wgpu::SurfaceError::Lost) => self.context.resize(self.context.size),
-                Err(wgpu::SurfaceError::OutOfMemory) => *control_flow = ControlFlow::Exit,
-                Err(e) => eprintln!("{:?}", e),
             };
         });
     }
