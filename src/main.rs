@@ -54,21 +54,17 @@ fn main() {
     world.insert(entity, ecs::Player {});
 
     world.systems.push(Box::new(
-        ecs::update_pos as fn(&mut ecs::Timer, (&mut ecs::Position, &mut ecs::Velocity)),
+        ecs::update_pos as fn(&mut ecs::Timer, &mut ecs::Position, &mut ecs::Velocity),
     ));
     world
         .systems
         .push(Box::new(ecs::print_fps as fn(&mut ecs::Timer)));
     world.systems.push(Box::new(
-        ecs::render_sprite as fn(&mut ecs::RenderBatchRes, (&mut ecs::Position, &mut ecs::Sprite)),
+        ecs::render_sprite as fn(&mut ecs::RenderBatchRes, &mut ecs::Position, &mut ecs::Sprite),
     ));
     world.systems.push(Box::new(
         ecs::player_system
-            as fn(
-                timer: &mut ecs::Timer,
-                input: &mut graphics::UserInput,
-                query: (&mut ecs::Velocity, &mut ecs::Player),
-            ),
+            as fn(&mut ecs::Timer, &mut graphics::UserInput, &mut ecs::Velocity, &mut ecs::Player),
     ));
 
     pollster::block_on(graphics::Graphics::new()).run(move |user_input| world.run(user_input));
