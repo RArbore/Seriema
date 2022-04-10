@@ -28,8 +28,8 @@ pub enum ControllerScheme {
 
 pub struct Controller {
     pressed: [bool; NUM_KEYCODES],
-    mouse_x: f64,
-    mouse_y: f64,
+    cursor_x: f64,
+    cursor_y: f64,
     scheme: ControllerScheme,
 }
 
@@ -39,14 +39,15 @@ pub struct UserInput {
     pub crouch: bool,
     pub left: bool,
     pub right: bool,
+    pub angle: f32,
 }
 
 impl Controller {
     pub fn new(scheme: ControllerScheme) -> Self {
         Controller {
             pressed: [false; NUM_KEYCODES],
-            mouse_x: 0.0,
-            mouse_y: 0.0,
+            cursor_x: 0.0,
+            cursor_y: 0.0,
             scheme,
         }
     }
@@ -79,9 +80,8 @@ impl Controller {
                 },
                 ControllerScheme::KeyboardMouse { .. },
             ) => {
-                self.mouse_x = *x - size.width as f64 / 2.0;
-                self.mouse_y = *y - size.height as f64 / 2.0;
-                eprintln!("{} {}", self.mouse_x, self.mouse_y);
+                self.cursor_x = *x - size.width as f64 / 2.0;
+                self.cursor_y = *y - size.height as f64 / 2.0;
                 true
             }
             _ => false,
@@ -100,6 +100,19 @@ impl Controller {
                 crouch: self.pressed[crouch_key as usize],
                 left: self.pressed[left_key as usize],
                 right: self.pressed[right_key as usize],
+                angle: if self.cursor_x == 0.0 {
+                    if self.cursor_y > 0.0 {
+                        std::f32::consts::PI / 2.0
+                    } else {
+                        3.0 * std::f32::consts::PI / 2.0
+                    }
+                } else {
+                    if self.cursor_x < 0.0 {
+                        (self.cursor_y / self.cursor_x).atan() as f32 + std::f32::consts::PI
+                    } else {
+                        (self.cursor_y / self.cursor_x).atan() as f32
+                    }
+                },
             },
         }
     }
@@ -112,6 +125,7 @@ impl UserInput {
             crouch: false,
             left: false,
             right: false,
+            angle: 0.0,
         }
     }
 }
