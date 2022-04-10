@@ -12,6 +12,7 @@
  * along with game-testbed. If not, see <https://www.gnu.org/licenses/>.
  */
 
+use winit::dpi::{PhysicalPosition, PhysicalSize};
 use winit::event::*;
 
 const NUM_KEYCODES: usize = 164;
@@ -27,6 +28,8 @@ pub enum ControllerScheme {
 
 pub struct Controller {
     pressed: [bool; NUM_KEYCODES],
+    mouse_x: f64,
+    mouse_y: f64,
     scheme: ControllerScheme,
 }
 
@@ -42,11 +45,17 @@ impl Controller {
     pub fn new(scheme: ControllerScheme) -> Self {
         Controller {
             pressed: [false; NUM_KEYCODES],
+            mouse_x: 0.0,
+            mouse_y: 0.0,
             scheme,
         }
     }
 
-    pub fn process_event(&mut self, event: &WindowEvent) -> bool {
+    pub fn process_window_event(
+        &mut self,
+        event: &WindowEvent,
+        size: &winit::dpi::PhysicalSize<u32>,
+    ) -> bool {
         match (event, &self.scheme) {
             (
                 WindowEvent::KeyboardInput {
@@ -61,6 +70,18 @@ impl Controller {
                 ControllerScheme::KeyboardMouse { .. },
             ) => {
                 self.pressed[*keycode as usize] = *state == ElementState::Pressed;
+                true
+            }
+            (
+                WindowEvent::CursorMoved {
+                    position: PhysicalPosition { x, y },
+                    ..
+                },
+                ControllerScheme::KeyboardMouse { .. },
+            ) => {
+                self.mouse_x = *x - size.width as f64 / 2.0;
+                self.mouse_y = *y - size.height as f64 / 2.0;
+                eprintln!("{} {}", self.mouse_x, self.mouse_y);
                 true
             }
             _ => false,

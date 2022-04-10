@@ -75,15 +75,14 @@ impl Graphics {
                 Event::MainEventsCleared => {
                     self.window.request_redraw();
                 }
-                Event::DeviceEvent {
-                    event: DeviceEvent::MouseMotion { delta },
-                    ..
-                } => {}
                 Event::WindowEvent {
                     ref event,
                     window_id,
                 } if window_id == self.window.id() => {
-                    if !self.context.input(&mut self.controller, event) {
+                    if !self
+                        .controller
+                        .process_window_event(event, &self.context.size)
+                    {
                         match event {
                             WindowEvent::Resized(physical_size) => {
                                 self.context.resize(*physical_size);
@@ -315,10 +314,6 @@ impl Context {
             self.config.height = new_size.height;
             self.surface.configure(&self.device, &self.config);
         }
-    }
-
-    fn input(&mut self, controller: &mut Controller, event: &WindowEvent) -> bool {
-        controller.process_event(event)
     }
 
     fn render(&mut self, sprites: RenderBatch, cx: f32, cy: f32) -> Result<(), wgpu::SurfaceError> {
