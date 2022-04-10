@@ -39,7 +39,8 @@ pub struct UserInput {
     pub crouch: bool,
     pub left: bool,
     pub right: bool,
-    pub angle: f32,
+    pub n_cursor_x: f32,
+    pub n_cursor_y: f32,
 }
 
 impl Controller {
@@ -98,24 +99,14 @@ impl Controller {
             } => {
                 let adjusted_x = self.cursor_x as f32 - ax;
                 let adjusted_y = self.cursor_y as f32 - ay;
+                let magnitude = (adjusted_x * adjusted_x + adjusted_y * adjusted_y).sqrt();
                 UserInput {
                     jump: self.pressed[jump_key as usize],
                     crouch: self.pressed[crouch_key as usize],
                     left: self.pressed[left_key as usize],
                     right: self.pressed[right_key as usize],
-                    angle: if adjusted_x == 0.0 {
-                        if adjusted_y > 0.0 {
-                            std::f32::consts::PI / 2.0
-                        } else {
-                            3.0 * std::f32::consts::PI / 2.0
-                        }
-                    } else {
-                        if adjusted_x < 0.0 {
-                            (adjusted_y / adjusted_x).atan() + std::f32::consts::PI
-                        } else {
-                            (adjusted_y / adjusted_x).atan()
-                        }
-                    },
+                    n_cursor_x: adjusted_x / magnitude,
+                    n_cursor_y: -adjusted_y / magnitude,
                 }
             }
         }
@@ -129,7 +120,8 @@ impl UserInput {
             crouch: false,
             left: false,
             right: false,
-            angle: 0.0,
+            n_cursor_x: 1.0,
+            n_cursor_y: 0.0,
         }
     }
 }

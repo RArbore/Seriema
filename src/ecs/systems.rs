@@ -110,16 +110,6 @@ pub fn player_system(
     user_input: &mut UserInput,
     query: (&mut Velocity, &mut Player),
 ) {
-    if user_input.jump {
-        query.0.y += 100.0 * timer.dt();
-    }
-    if user_input.crouch {
-        query.0.y -= 100.0 * timer.dt();
-    }
-    if user_input.left {
-        query.0.x -= 100.0 * timer.dt();
-    }
-    if user_input.right {
-        query.0.x += 100.0 * timer.dt();
-    }
+    query.0.x += user_input.n_cursor_x * 100.0 * timer.dt();
+    query.0.y += user_input.n_cursor_y * 100.0 * timer.dt();
 }
