@@ -262,6 +262,16 @@ impl Context {
                                 shader_location: 7,
                                 format: wgpu::VertexFormat::Float32,
                             },
+                            wgpu::VertexAttribute {
+                                offset: std::mem::size_of::<[f32; 6]>() as wgpu::BufferAddress,
+                                shader_location: 8,
+                                format: wgpu::VertexFormat::Float32,
+                            },
+                            wgpu::VertexAttribute {
+                                offset: std::mem::size_of::<[f32; 7]>() as wgpu::BufferAddress,
+                                shader_location: 9,
+                                format: wgpu::VertexFormat::Float32,
+                            },
                         ],
                     },
                 ],
@@ -353,14 +363,8 @@ impl Context {
                 }],
                 depth_stencil_attachment: None,
             });
-            self.queue.write_buffer(
-                &self.camera_buffer,
-                0,
-                bytemuck::cast_slice(&[
-                    cx / (self.size.width as f32),
-                    cy / (self.size.height as f32),
-                ]),
-            );
+            self.queue
+                .write_buffer(&self.camera_buffer, 0, bytemuck::cast_slice(&[cx, cy]));
             render_pass.set_pipeline(&self.render_pipeline);
             render_pass.set_vertex_buffer(0, self.vertex_buffers.slice(..));
             render_pass.set_vertex_buffer(1, self.instance_buffer.slice(..));
@@ -376,11 +380,12 @@ impl Context {
                     .map(|(frame, x, y, w, h)| super::sprite::Instance {
                         texoffset: *frame as f32 / Sprite::frames(i) as f32,
                         texwidth: 1.0 / Sprite::frames(i) as f32,
-                        x: *x / self.size.width as f32,
-                        y: *y / self.size.height as f32,
-                        w: self.textures[i].dimensions.0 as f32 / Sprite::frames(i) as f32 * *w
-                            / self.size.width as f32,
-                        h: self.textures[i].dimensions.1 as f32 * *h / self.size.height as f32,
+                        x: *x,
+                        y: *y,
+                        w: self.textures[i].dimensions.0 as f32 / Sprite::frames(i) as f32 * *w,
+                        h: self.textures[i].dimensions.1 as f32 * *h,
+                        ww: self.size.width as f32,
+                        wh: self.size.height as f32,
                     })
                     .collect();
                 self.queue.write_buffer(

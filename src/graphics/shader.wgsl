@@ -31,6 +31,8 @@ struct InstanceInput {
     [[location(5)]] y: f32;
     [[location(6)]] w: f32;
     [[location(7)]] h: f32;
+    [[location(8)]] ww: f32;
+    [[location(9)]] wh: f32;
 };
 
 struct VertexOutput {
@@ -45,7 +47,7 @@ fn vs_main(
 ) -> VertexOutput {
     var out: VertexOutput;
     out.texcoord = vec2<f32>(model.texcoord.x * instance.texwidth + instance.texoffset, model.texcoord.y);
-    out.clip_position = vec4<f32>(model.position.x * instance.w + instance.x - camera.x, model.position.y * instance.h + instance.y - camera.y, 0.0, 1.0);
+    out.clip_position = vec4<f32>(model.position.x * instance.w / instance.ww + instance.x / instance.ww - camera.x / instance.ww, model.position.y * instance.h / instance.wh + instance.y / instance.wh - camera.y / instance.wh, 0.0, 1.0);
     return out;
 }
 

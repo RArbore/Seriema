@@ -46,6 +46,8 @@ pub struct Instance {
     pub y: f32,
     pub w: f32,
     pub h: f32,
+    pub ww: f32,
+    pub wh: f32,
 }
 
 #[repr(C)]
