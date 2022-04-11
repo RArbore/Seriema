@@ -53,11 +53,7 @@ impl Controller {
         }
     }
 
-    pub fn process_window_event(
-        &mut self,
-        event: &WindowEvent,
-        size: &winit::dpi::PhysicalSize<u32>,
-    ) -> bool {
+    pub fn process_window_event(&mut self, event: &WindowEvent, size: &PhysicalSize<u32>) -> bool {
         match (event, &self.scheme) {
             (
                 WindowEvent::KeyboardInput {

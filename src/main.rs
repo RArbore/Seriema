@@ -17,13 +17,13 @@ mod graphics;
 
 fn main() {
     let mut world = ecs::World::new();
-    for i in 0..10000 {
+    for i in 0..10201 {
         let entity = world.add();
         world.insert(
             entity,
             ecs::Position {
-                x: -2000.0 + ((i / 100) as f32) * 64.0,
-                y: -2000.0 + ((i % 100) as f32) * 64.0,
+                x: -2000.0 + ((i / 101) as f32) * 64.0,
+                y: -2000.0 + ((i % 101) as f32) * 64.0,
             },
         );
         world.insert(entity, ecs::Velocity { x: 100.0, y: 0.0 });
@@ -64,7 +64,15 @@ fn main() {
     ));
     world.systems.push(Box::new(
         ecs::player_system
-            as fn(&mut ecs::Timer, &mut graphics::UserInput, &mut ecs::Velocity, &mut ecs::Player),
+            as fn(
+                &mut ecs::Timer,
+                &mut graphics::UserInput,
+                &mut (f32, f32),
+                &mut (f32, f32),
+                &mut ecs::Position,
+                &mut ecs::Velocity,
+                &mut ecs::Player,
+            ),
     ));
 
     pollster::block_on(graphics::Graphics::new()).run(move |user_input| world.run(user_input));

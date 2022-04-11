@@ -87,13 +87,28 @@ pub fn render_sprite(render_batch: &mut RenderBatchRes, pos: &mut Position, spri
     );
 }
 
-system_impl!(A, B, (timer, Timer), (user_input, UserInput));
+system_impl!(
+    A,
+    B,
+    C,
+    (timer, Timer),
+    (user_input, UserInput),
+    (camera, (f32, f32)),
+    (control_point, (f32, f32))
+);
 pub fn player_system(
     timer: &mut Timer,
     user_input: &mut UserInput,
+    camera: &mut (f32, f32),
+    control_point: &mut (f32, f32),
+    pos: &mut Position,
     vel: &mut Velocity,
     _player: &mut Player,
 ) {
     vel.x += user_input.n_cursor_x * 100.0 * timer.dt();
     vel.y += user_input.n_cursor_y * 100.0 * timer.dt();
+    camera.0 = pos.x;
+    camera.1 = pos.y;
+    control_point.0 = pos.x;
+    control_point.1 = pos.y;
 }

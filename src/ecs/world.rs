@@ -35,6 +35,8 @@ pub struct Resources {
     pub timer: Timer,
     pub render_batch_res: RenderBatchRes,
     pub user_input: UserInput,
+    pub camera: (f32, f32),
+    pub control_point: (f32, f32),
 }
 
 pub struct World {
@@ -59,6 +61,8 @@ impl World {
                 timer: Timer::new(),
                 render_batch_res: RenderBatchRes::new(0 as *mut RenderBatch),
                 user_input: UserInput::new(),
+                camera: (0.0, 0.0),
+                control_point: (0.0, 0.0),
             },
         }
     }
@@ -92,6 +96,12 @@ impl World {
                 );
             }
         }
-        (render_batch, 0.0, 0.0, 0.0, 0.0)
+        (
+            render_batch,
+            self.resources.camera.0,
+            self.resources.camera.1,
+            self.resources.control_point.0,
+            self.resources.control_point.1,
+        )
     }
 }

@@ -382,12 +382,6 @@ impl Context {
                             / self.size.width as f32,
                         h: self.textures[i].dimensions.1 as f32 * *h / self.size.height as f32,
                     })
-                    .filter(|inst| {
-                        inst.x - 0.5 * inst.w < 1.0
-                            && inst.x + 0.5 * inst.w > -1.0
-                            && inst.y - 0.5 * inst.h < 1.0
-                            && inst.y + 0.5 * inst.h > -1.0
-                    })
                     .collect();
                 self.queue.write_buffer(
                     &self.instance_buffer,
