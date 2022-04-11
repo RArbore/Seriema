@@ -12,9 +12,12 @@
  * along with game-testbed. If not, see <https://www.gnu.org/licenses/>.
  */
 
+use std::collections::HashMap;
+
 use super::components::*;
 use super::resources::*;
 use super::systems::*;
+use super::tiles::*;
 
 use super::super::graphics::controls::UserInput;
 use super::super::graphics::sprite::{RenderBatch, NUM_TEXTURES};
@@ -37,6 +40,7 @@ pub struct Resources {
     pub user_input: UserInput,
     pub camera: (f32, f32),
     pub control_point: (f32, f32),
+    pub tiles: HashMap<(u32, u32), [Tile; CHUNK_SIZE * CHUNK_SIZE]>,
 }
 
 pub struct World {

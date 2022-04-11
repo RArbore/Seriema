@@ -12,14 +12,15 @@
  * along with game-testbed. If not, see <https://www.gnu.org/licenses/>.
  */
 
-pub mod components;
-pub mod resources;
-pub mod systems;
-pub mod tiles;
-pub mod world;
+pub const NUM_TILES: usize = 4;
+pub const TILE_SIZE: usize = 16;
+pub const CHUNK_SIZE: usize = 16;
 
-pub use components::*;
-pub use resources::*;
-pub use systems::*;
-pub use tiles::*;
-pub use world::*;
+#[repr(usize)]
+#[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]
+pub enum Tile {
+    TestTile1,
+    TestTile2,
+    TestTile3,
+    TestTile4,
+}
