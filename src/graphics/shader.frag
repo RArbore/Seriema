@@ -12,4 +12,20 @@
  * along with game-testbed. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#version 460
+Texture2D shaderTexture;
+SamplerState sample;
+
+struct FragInput {
+    float4 pos : VPOS;
+    float2 texc : TEXCOORD0;
+};
+
+struct FragOutput {
+    float4 color : COLOR0;
+};
+
+FragOutput fs_main(FragInput input) : SV_TARGET {
+    FragOutput output;
+    output.color = shaderTexture.Sample(sample, input.texc);
+    return output;
+}

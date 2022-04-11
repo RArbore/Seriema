@@ -12,9 +12,36 @@
  * along with game-testbed. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#version 460
-
 struct Camera {
     float x;
     float y;
 };
+
+cbuffer UBO : register(b0) {
+    Camera camera : packoffset(c0);
+};
+
+struct VertexInput {
+    float2 pos : TEXCOORD0;
+    float2 texc : TEXCOORD1;
+    float texo : TEXCOORD2;
+    float texw : TEXCOORD3;
+    float x : TEXCOORD4;
+    float y : TEXCOORD5;
+    float w : TEXCOORD6;
+    float h : TEXCOORD7;
+    float ww : TEXCOORD8;
+    float wh : TEXCOORD9;
+};
+
+struct VertexOutput {
+    float4 pos : POSITION;
+    float2 texc : TEXCOORD0;
+};
+
+VertexOutput vs_main(VertexInput input) {
+    VertexOutput result;
+    result.pos = float4(input.pos.x * input.w / input.ww + input.x / input.ww - camera.x / input.ww, input.pos.y * input.h / input.wh + input.y / input.wh - camera.y / input.wh, 0.0, 1.0);
+    result.texc = float2(input.pos.x * input.texw + input.texo, input.texc.y);
+    return result;
+}

@@ -119,11 +119,13 @@ impl Graphics {
 }
 
 macro_rules! create_shader {
-    ($x:expr, $y:expr, $z:expr) => {{
+    ($x:expr, $y:expr, $z:expr, $w:expr) => {{
         let shader_bytes = include_str!($x);
         let mut compiler = shaderc::Compiler::new().unwrap();
+        let mut options = shaderc::CompileOptions::new().unwrap();
+        options.set_source_language(shaderc::SourceLanguage::HLSL);
         let spirv_bytes = compiler
-            .compile_into_spirv(shader_bytes, $y, $x, "main", None)
+            .compile_into_spirv(shader_bytes, $y, $x, $z, Some(&options))
             .unwrap();
         let spirv = std::borrow::Cow::Owned(
             wgpu::util::make_spirv_raw(spirv_bytes.as_binary_u8()).into_owned(),
@@ -132,7 +134,7 @@ macro_rules! create_shader {
             label: None,
             source: spirv,
         };
-        unsafe { $z.create_shader_module_spirv(&shader_binary) }
+        unsafe { $w.create_shader_module_spirv(&shader_binary) }
     }};
 }
 
@@ -153,7 +155,8 @@ impl Context {
         let (device, queue) = adapter
             .request_device(
                 &wgpu::DeviceDescriptor {
-                    features: wgpu::Features::empty(),
+                    features: wgpu::Features::empty()
+                        .union(wgpu::Features::SPIRV_SHADER_PASSTHROUGH),
                     limits: wgpu::Limits::default(),
                     label: None,
                 },
@@ -214,13 +217,22 @@ impl Context {
             label: Some("camera_bind_group"),
         });
 
-        let vert_shader = create_shader!("shader.vert", shaderc::ShaderKind::Vertex, device);
-        let frag_shader = create_shader!("shader.frag", shaderc::ShaderKind::Fragment, device);
+        let vert_shader = create_shader!(
+            "shader.vert",
+            shaderc::ShaderKind::Vertex,
+            "vs_main",
+            device
+        );
+        let frag_shader = create_shader!(
+            "shader.frag",
+            shaderc::ShaderKind::Fragment,
+            "fs_main",
+            device
+        );
 
         let render_pipeline_layout =
             device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
                 label: Some("Render Pipeline Layout"),
-                //bind_group_layouts: &texture_bind_group_layouts.iter().collect::<Vec<_>>(),
                 bind_group_layouts: &[&texture_bind_group_layouts[0], &camera_bind_group_layout],
                 push_constant_ranges: &[],
             });
