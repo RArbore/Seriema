@@ -118,6 +118,24 @@ impl Graphics {
     }
 }
 
+macro_rules! create_shader {
+    ($x:expr, $y:expr, $z:expr) => {{
+        let shader_bytes = include_str!($x);
+        let mut compiler = shaderc::Compiler::new().unwrap();
+        let spirv_bytes = compiler
+            .compile_into_spirv(shader_bytes, $y, $x, "main", None)
+            .unwrap();
+        let spirv = std::borrow::Cow::Owned(
+            wgpu::util::make_spirv_raw(spirv_bytes.as_binary_u8()).into_owned(),
+        );
+        let shader_binary = wgpu::ShaderModuleDescriptorSpirV {
+            label: None,
+            source: spirv,
+        };
+        unsafe { $z.create_shader_module_spirv(&shader_binary) }
+    }};
+}
+
 impl Context {
     async fn new(window: &Window) -> Self {
         let size = window.inner_size();
@@ -196,7 +214,9 @@ impl Context {
             label: Some("camera_bind_group"),
         });
 
-        let shader = device.create_shader_module(&include_wgsl!("shader.wgsl"));
+        let vert_shader = create_shader!("shader.vert", shaderc::ShaderKind::Vertex, device);
+        let frag_shader = create_shader!("shader.frag", shaderc::ShaderKind::Fragment, device);
+
         let render_pipeline_layout =
             device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
                 label: Some("Render Pipeline Layout"),
@@ -208,7 +228,7 @@ impl Context {
             label: Some("Render Pipeline"),
             layout: Some(&render_pipeline_layout),
             vertex: wgpu::VertexState {
-                module: &shader,
+                module: &vert_shader,
                 entry_point: "vs_main",
                 buffers: &[
                     wgpu::VertexBufferLayout {
@@ -277,7 +297,7 @@ impl Context {
                 ],
             },
             fragment: Some(wgpu::FragmentState {
-                module: &shader,
+                module: &frag_shader,
                 entry_point: "fs_main",
                 targets: &[wgpu::ColorTargetState {
                     format: config.format,
