@@ -22,6 +22,8 @@ use super::tiles::*;
 use super::super::graphics::controls::UserInput;
 use super::super::graphics::sprite::{SpriteBatch, NUM_TEXTURES};
 
+pub const PIXEL_SIZE: usize = 2;
+
 #[derive(Copy, Clone)]
 pub struct Entity {
     pub index: usize,
@@ -109,9 +111,9 @@ impl World {
                 for c in 0..CHUNK_SIZE {
                     if data[r][c] != Tile::NoTile {
                         tile_batch.push((
+                            data[r][c] as usize,
                             coords.0 * CHUNK_SIZE + r,
                             coords.1 * CHUNK_SIZE + c,
-                            data[r][c] as usize,
                         ));
                     }
                 }

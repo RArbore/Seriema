@@ -17,27 +17,29 @@ mod graphics;
 
 fn main() {
     let mut world = ecs::World::new();
-    for i in 0..10201 {
+    /*
+        for i in 0..10201 {
         let entity = world.add();
         world.insert(
-            entity,
-            ecs::Position {
-                x: -2000.0 + ((i / 101) as f32) * 64.0,
-                y: -2000.0 + ((i % 101) as f32) * 64.0,
-            },
-        );
+        entity,
+        ecs::Position {
+        x: -2000.0 + ((i / 101) as f32) * 64.0,
+        y: -2000.0 + ((i % 101) as f32) * 64.0,
+    },
+    );
         world.insert(entity, ecs::Velocity { x: 100.0, y: 0.0 });
         world.insert(
-            entity,
-            ecs::Sprite {
-                sprite: graphics::sprite::Sprite::TestSprite1,
-                frame: i % 2,
-                width: 4.0,
-                height: 4.0,
-            },
-        );
+        entity,
+        ecs::Sprite {
+        sprite: graphics::sprite::Sprite::TestSprite1,
+        frame: i % 2,
+        width: 4.0,
+        height: 4.0,
+    },
+    );
         world.insert(entity, ecs::Player {});
     }
+         */
 
     let entity = world.add();
     world.insert(entity, ecs::Position { x: 0.0, y: 0.0 });
@@ -47,15 +49,15 @@ fn main() {
         ecs::Sprite {
             sprite: graphics::sprite::Sprite::TestSprite2,
             frame: 0,
-            width: 8.0,
-            height: 8.0,
+            width: ecs::PIXEL_SIZE as f32,
+            height: ecs::PIXEL_SIZE as f32,
         },
     );
     world.insert(entity, ecs::Player {});
 
-    world.systems.push(Box::new(
-        ecs::update_pos as fn(&mut ecs::Timer, &mut ecs::Position, &mut ecs::Velocity),
-    ));
+    //world.systems.push(Box::new(
+    //    ecs::update_pos as fn(&mut ecs::Timer, &mut ecs::Position, &mut ecs::Velocity),
+    //));
     world
         .systems
         .push(Box::new(ecs::print_fps as fn(&mut ecs::Timer)));
@@ -74,6 +76,13 @@ fn main() {
                 &mut ecs::Player,
             ),
     ));
+
+    world.resources.tiles.insert(
+        (0, 0),
+        [[ecs::tiles::Tile::NoTile; ecs::tiles::CHUNK_SIZE]; ecs::tiles::CHUNK_SIZE],
+    );
+    world.resources.tiles.get_mut(&(0, 0)).unwrap()[0][0] = ecs::tiles::Tile::TestTile1;
+    world.resources.tiles.get_mut(&(0, 0)).unwrap()[0][1] = ecs::tiles::Tile::TestTile2;
 
     pollster::block_on(graphics::Graphics::new()).run(move |user_input| world.run(user_input));
 }
