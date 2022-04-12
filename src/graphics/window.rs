@@ -380,30 +380,6 @@ impl Context {
             render_pass.set_bind_group(1, &self.camera_bind_group, &[]);
 
             let mut count: usize = 0;
-            if tiles.len() > 0 {
-                let instances: Vec<_> = tiles
-                    .iter()
-                    .map(|(tile, x, y)| super::sprite::Instance {
-                        texoffset: *tile as f32 / NUM_TILES as f32,
-                        texwidth: 1.0 / NUM_TILES as f32,
-                        x: ((*x * PIXEL_SIZE + PIXEL_SIZE / 2) * TILE_SIZE) as f32,
-                        y: ((*y * PIXEL_SIZE + PIXEL_SIZE / 2) * TILE_SIZE) as f32,
-                        w: (self.textures[0].dimensions.0 as usize * PIXEL_SIZE) as f32
-                            / NUM_TILES as f32,
-                        h: (self.textures[0].dimensions.1 as usize * PIXEL_SIZE) as f32,
-                        ww: self.size.width as f32,
-                        wh: self.size.height as f32,
-                    })
-                    .collect();
-                self.queue.write_buffer(
-                    &self.instance_buffer,
-                    0,
-                    bytemuck::cast_slice(instances.as_ref()),
-                );
-                render_pass.set_bind_group(0, &self.texture_bind_groups[0], &[]);
-                render_pass.draw(0..4, 0..(instances.len()) as _);
-                count += instances.len();
-            }
 
             for i in 0..sprites.len() {
                 if sprites[i].len() == 0 {
@@ -428,8 +404,32 @@ impl Context {
                     bytemuck::cast_slice(instances.as_ref()),
                 );
                 render_pass.set_bind_group(0, &self.texture_bind_groups[i + 1], &[]);
-                render_pass.draw(0..4, (count as u32)..(count + instances.len()) as _);
+                render_pass.draw(0..4, (count as u32)..(count + instances.len()) as u32);
                 count += instances.len();
+            }
+
+            if tiles.len() > 0 {
+                let instances: Vec<_> = tiles
+                    .iter()
+                    .map(|(tile, x, y)| super::sprite::Instance {
+                        texoffset: *tile as f32 / NUM_TILES as f32,
+                        texwidth: 1.0 / NUM_TILES as f32,
+                        x: ((*x * PIXEL_SIZE + PIXEL_SIZE / 2) * TILE_SIZE) as f32,
+                        y: ((*y * PIXEL_SIZE + PIXEL_SIZE / 2) * TILE_SIZE) as f32,
+                        w: (self.textures[0].dimensions.0 as usize * PIXEL_SIZE) as f32
+                            / NUM_TILES as f32,
+                        h: (self.textures[0].dimensions.1 as usize * PIXEL_SIZE) as f32,
+                        ww: self.size.width as f32,
+                        wh: self.size.height as f32,
+                    })
+                    .collect();
+                self.queue.write_buffer(
+                    &self.instance_buffer,
+                    (count * std::mem::size_of::<super::sprite::Instance>()) as u64,
+                    bytemuck::cast_slice(instances.as_ref()),
+                );
+                render_pass.set_bind_group(0, &self.texture_bind_groups[0], &[]);
+                render_pass.draw(0..4, (count as u32)..(count + instances.len()) as u32);
             }
         }
 

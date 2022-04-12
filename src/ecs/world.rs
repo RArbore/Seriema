@@ -22,7 +22,7 @@ use super::tiles::*;
 use super::super::graphics::controls::UserInput;
 use super::super::graphics::sprite::{SpriteBatch, NUM_TEXTURES};
 
-pub const PIXEL_SIZE: usize = 2;
+pub const PIXEL_SIZE: usize = 4;
 
 #[derive(Copy, Clone)]
 pub struct Entity {
