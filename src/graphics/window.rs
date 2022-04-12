@@ -390,10 +390,12 @@ impl Context {
                     .map(|(frame, x, y, w, h)| super::sprite::Instance {
                         texoffset: *frame as f32 / Sprite::frames(i) as f32,
                         texwidth: 1.0 / Sprite::frames(i) as f32,
-                        x: *x,
-                        y: *y,
-                        w: self.textures[i + 1].dimensions.0 as f32 / Sprite::frames(i) as f32 * *w,
-                        h: self.textures[i + 1].dimensions.1 as f32 * *h,
+                        x: *x * PIXEL_SIZE as f32,
+                        y: *y * PIXEL_SIZE as f32,
+                        w: (self.textures[i + 1].dimensions.0 as usize * PIXEL_SIZE) as f32
+                            / Sprite::frames(i) as f32
+                            * *w,
+                        h: (self.textures[i + 1].dimensions.1 as usize * PIXEL_SIZE) as f32 * *h,
                         ww: self.size.width as f32,
                         wh: self.size.height as f32,
                     })

@@ -42,15 +42,15 @@ fn main() {
          */
 
     let entity = world.add();
-    world.insert(entity, ecs::Position { x: 0.0, y: 0.0 });
+    world.insert(entity, ecs::Position { x: 16.0, y: 16.0 });
     world.insert(entity, ecs::Velocity { x: 0.0, y: 0.0 });
     world.insert(
         entity,
         ecs::Sprite {
             sprite: graphics::sprite::Sprite::TestSprite2,
             frame: 0,
-            width: ecs::PIXEL_SIZE as f32,
-            height: ecs::PIXEL_SIZE as f32,
+            width: 1.0,
+            height: 1.0,
         },
     );
     world.insert(entity, ecs::Player {});
