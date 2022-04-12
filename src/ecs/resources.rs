@@ -55,18 +55,18 @@ impl Timer {
     }
 }
 
-pub struct RenderBatchRes {
-    pub render_batch: *mut RenderBatch,
+pub struct SpriteBatchRes {
+    pub sprite_batch: *mut SpriteBatch,
 }
 
-impl RenderBatchRes {
-    pub fn new(render_batch: *mut RenderBatch) -> Self {
-        RenderBatchRes { render_batch }
+impl SpriteBatchRes {
+    pub fn new(sprite_batch: *mut SpriteBatch) -> Self {
+        SpriteBatchRes { sprite_batch }
     }
 
     pub fn insert(&mut self, sprite: Sprite, frame: usize, x: f32, y: f32, w: f32, h: f32) {
         unsafe {
-            (*self.render_batch)[sprite as usize].push((frame, x, y, w, h));
+            (*self.sprite_batch)[sprite as usize].push((frame, x, y, w, h));
         }
     }
 }

@@ -35,7 +35,7 @@ impl Sprite {
     }
 }
 
-pub type RenderBatch = Vec<Vec<(usize, f32, f32, f32, f32)>>;
+pub type SpriteBatch = Vec<Vec<(usize, f32, f32, f32, f32)>>;
 
 #[repr(C)]
 #[derive(Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]

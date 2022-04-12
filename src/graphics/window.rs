@@ -24,6 +24,8 @@ use wgpu::*;
 use super::controls::*;
 use super::sprite::*;
 
+use super::super::ecs::tiles::*;
+
 pub struct Graphics {
     event_loop: EventLoop<()>,
     controller: Controller,
@@ -68,7 +70,7 @@ impl Graphics {
         }
     }
 
-    pub fn run<F: FnMut(UserInput) -> (RenderBatch, f32, f32, f32, f32) + 'static>(
+    pub fn run<F: FnMut(UserInput) -> (SpriteBatch, TileBatch, f32, f32, f32, f32) + 'static>(
         mut self,
         mut tick: F,
     ) {
@@ -101,9 +103,9 @@ impl Graphics {
                     }
                 }
                 Event::RedrawRequested(window_id) if window_id == self.window.id() => {
-                    let (sprites, cx, cy, ax, ay) =
+                    let (sprites, tiles, cx, cy, ax, ay) =
                         tick(self.controller.get_user_input(p_ax, p_ay));
-                    match self.context.render(sprites, cx, cy) {
+                    match self.context.render(sprites, tiles, cx, cy) {
                         Ok(_) => {}
                         Err(wgpu::SurfaceError::Lost) => self.context.resize(self.context.size),
                         Err(wgpu::SurfaceError::OutOfMemory) => *control_flow = ControlFlow::Exit,
@@ -334,7 +336,13 @@ impl Context {
         }
     }
 
-    fn render(&mut self, sprites: RenderBatch, cx: f32, cy: f32) -> Result<(), wgpu::SurfaceError> {
+    fn render(
+        &mut self,
+        sprites: SpriteBatch,
+        tiles: TileBatch,
+        cx: f32,
+        cy: f32,
+    ) -> Result<(), wgpu::SurfaceError> {
         let output = self.surface.get_current_texture()?;
         let view = output
             .texture

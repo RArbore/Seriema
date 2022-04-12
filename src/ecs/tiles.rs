@@ -12,6 +12,8 @@
  * along with game-testbed. If not, see <https://www.gnu.org/licenses/>.
  */
 
+use std::collections::HashMap;
+
 pub const NUM_TILES: usize = 4;
 pub const TILE_SIZE: usize = 16;
 pub const CHUNK_SIZE: usize = 16;
@@ -23,4 +25,9 @@ pub enum Tile {
     TestTile2,
     TestTile3,
     TestTile4,
+    NoTile,
 }
+
+pub type Tiles = HashMap<(usize, usize), [[Tile; CHUNK_SIZE]; CHUNK_SIZE]>;
+
+pub type TileBatch = Vec<(usize, usize, usize)>;

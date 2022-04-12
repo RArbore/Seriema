@@ -60,7 +60,7 @@ fn main() {
         .systems
         .push(Box::new(ecs::print_fps as fn(&mut ecs::Timer)));
     world.systems.push(Box::new(
-        ecs::render_sprite as fn(&mut ecs::RenderBatchRes, &mut ecs::Position, &mut ecs::Sprite),
+        ecs::render_sprite as fn(&mut ecs::SpriteBatchRes, &mut ecs::Position, &mut ecs::Sprite),
     ));
     world.systems.push(Box::new(
         ecs::player_system

@@ -75,9 +75,9 @@ pub fn update_pos(timer: &mut Timer, pos: &mut Position, vel: &mut Velocity) {
     pos.y += vel.y * timer.dt();
 }
 
-system_impl!(A, B, (render_batch_res, RenderBatchRes));
-pub fn render_sprite(render_batch: &mut RenderBatchRes, pos: &mut Position, sprite: &mut Sprite) {
-    render_batch.insert(
+system_impl!(A, B, (sprite_batch_res, SpriteBatchRes));
+pub fn render_sprite(sprite_batch: &mut SpriteBatchRes, pos: &mut Position, sprite: &mut Sprite) {
+    sprite_batch.insert(
         sprite.sprite,
         sprite.frame,
         pos.x,
