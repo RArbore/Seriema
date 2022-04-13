@@ -43,7 +43,7 @@ fn main() {
 
     let entity = world.add();
     world.insert(entity, ecs::Position { x: 16.0, y: 16.0 });
-    world.insert(entity, ecs::Velocity { x: 0.0, y: 0.0 });
+    world.insert(entity, ecs::Velocity { x: 1.0, y: 0.0 });
     world.insert(
         entity,
         ecs::Sprite {
@@ -55,9 +55,9 @@ fn main() {
     );
     world.insert(entity, ecs::Player {});
 
-    //world.systems.push(Box::new(
-    //    ecs::update_pos as fn(&mut ecs::Timer, &mut ecs::Position, &mut ecs::Velocity),
-    //));
+    world.systems.push(Box::new(
+        ecs::update_pos as fn(&mut ecs::Timer, &mut ecs::Position, &mut ecs::Velocity),
+    ));
     world
         .systems
         .push(Box::new(ecs::print_fps as fn(&mut ecs::Timer)));
@@ -68,7 +68,7 @@ fn main() {
         ecs::player_system
             as fn(
                 &mut ecs::Timer,
-                &mut graphics::UserInput,
+                &mut graphics::GameInput,
                 &mut (f32, f32),
                 &mut (f32, f32),
                 &mut ecs::Position,

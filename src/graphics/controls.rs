@@ -15,6 +15,8 @@
 use winit::dpi::{PhysicalPosition, PhysicalSize};
 use winit::event::*;
 
+use super::super::ecs::world::PIXEL_SIZE;
+
 const NUM_KEYCODES: usize = 164;
 
 pub enum ControllerScheme {
@@ -34,7 +36,7 @@ pub struct Controller {
 }
 
 #[derive(Clone, Copy, Debug)]
-pub struct UserInput {
+pub struct GameInput {
     pub jump: bool,
     pub crouch: bool,
     pub left: bool,
@@ -85,7 +87,7 @@ impl Controller {
         }
     }
 
-    pub fn get_user_input(&self, ax: f32, ay: f32) -> UserInput {
+    pub fn get_game_input(&self, cx: f32, cy: f32, ax: f32, ay: f32) -> GameInput {
         match self.scheme {
             ControllerScheme::KeyboardMouse {
                 jump_key,
@@ -93,25 +95,25 @@ impl Controller {
                 left_key,
                 right_key,
             } => {
-                let adjusted_x = self.cursor_x as f32 - ax;
-                let adjusted_y = self.cursor_y as f32 - ay;
-                let magnitude = (adjusted_x * adjusted_x + adjusted_y * adjusted_y).sqrt();
-                UserInput {
+                let world_x = (self.cursor_x as f32 / PIXEL_SIZE as f32) + cx - ax;
+                let world_y = (self.cursor_y as f32 / PIXEL_SIZE as f32) + cy - ay;
+                let magnitude = (world_x * world_x + world_y * world_y).sqrt();
+                GameInput {
                     jump: self.pressed[jump_key as usize],
                     crouch: self.pressed[crouch_key as usize],
                     left: self.pressed[left_key as usize],
                     right: self.pressed[right_key as usize],
-                    n_cursor_x: adjusted_x / magnitude,
-                    n_cursor_y: -adjusted_y / magnitude,
+                    n_cursor_x: world_x / magnitude,
+                    n_cursor_y: -world_y / magnitude,
                 }
             }
         }
     }
 }
 
-impl UserInput {
+impl GameInput {
     pub fn new() -> Self {
-        UserInput {
+        GameInput {
             jump: false,
             crouch: false,
             left: false,

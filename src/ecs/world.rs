@@ -19,7 +19,7 @@ use super::resources::*;
 use super::systems::*;
 use super::tiles::*;
 
-use super::super::graphics::controls::UserInput;
+use super::super::graphics::controls::GameInput;
 use super::super::graphics::sprite::{SpriteBatch, NUM_TEXTURES};
 
 pub const PIXEL_SIZE: usize = 4;
@@ -39,7 +39,7 @@ pub struct Components {
 pub struct Resources {
     pub timer: Timer,
     pub sprite_batch_res: SpriteBatchRes,
-    pub user_input: UserInput,
+    pub user_input: GameInput,
     pub camera: (f32, f32),
     pub control_point: (f32, f32),
     pub tiles: Tiles,
@@ -66,7 +66,7 @@ impl World {
             resources: Resources {
                 timer: Timer::new(),
                 sprite_batch_res: SpriteBatchRes::new(0 as *mut SpriteBatch),
-                user_input: UserInput::new(),
+                user_input: GameInput::new(),
                 camera: (0.0, 0.0),
                 control_point: (0.0, 0.0),
                 tiles: HashMap::new(),
@@ -89,7 +89,7 @@ impl World {
         vec[entity.index] = Some(component);
     }
 
-    pub fn run(&mut self, input: UserInput) -> (SpriteBatch, TileBatch, f32, f32, f32, f32) {
+    pub fn run(&mut self, input: GameInput) -> (SpriteBatch, TileBatch, f32, f32, f32, f32) {
         self.resources.timer.update_dt();
         let mut sprite_batch: SpriteBatch = vec![vec![]; NUM_TEXTURES];
         self.resources.sprite_batch_res = SpriteBatchRes::new(&mut sprite_batch);

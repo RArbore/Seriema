@@ -71,10 +71,12 @@ impl Graphics {
         }
     }
 
-    pub fn run<F: FnMut(UserInput) -> (SpriteBatch, TileBatch, f32, f32, f32, f32) + 'static>(
+    pub fn run<F: FnMut(GameInput) -> (SpriteBatch, TileBatch, f32, f32, f32, f32) + 'static>(
         mut self,
         mut tick: F,
     ) {
+        let mut p_cx = 0.0;
+        let mut p_cy = 0.0;
         let mut p_ax = 0.0;
         let mut p_ay = 0.0;
         self.event_loop.run(move |event, _, control_flow| {
@@ -105,13 +107,15 @@ impl Graphics {
                 }
                 Event::RedrawRequested(window_id) if window_id == self.window.id() => {
                     let (sprites, tiles, cx, cy, ax, ay) =
-                        tick(self.controller.get_user_input(p_ax, p_ay));
+                        tick(self.controller.get_game_input(p_cx, p_cy, p_ax, p_ay));
                     match self.context.render(sprites, tiles, cx, cy) {
                         Ok(_) => {}
                         Err(wgpu::SurfaceError::Lost) => self.context.resize(self.context.size),
                         Err(wgpu::SurfaceError::OutOfMemory) => *control_flow = ControlFlow::Exit,
                         Err(e) => eprintln!("{:?}", e),
                     };
+                    p_cx = cx;
+                    p_cy = cy;
                     p_ax = ax;
                     p_ay = ay;
                 }
@@ -372,8 +376,11 @@ impl Context {
                 }],
                 depth_stencil_attachment: None,
             });
-            self.queue
-                .write_buffer(&self.camera_buffer, 0, bytemuck::cast_slice(&[cx, cy]));
+            self.queue.write_buffer(
+                &self.camera_buffer,
+                0,
+                bytemuck::cast_slice(&[cx * PIXEL_SIZE as f32, cy * PIXEL_SIZE as f32]),
+            );
             render_pass.set_pipeline(&self.render_pipeline);
             render_pass.set_vertex_buffer(0, self.vertex_buffers.slice(..));
             render_pass.set_vertex_buffer(1, self.instance_buffer.slice(..));

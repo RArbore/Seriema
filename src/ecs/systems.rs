@@ -16,7 +16,7 @@ use super::components::*;
 use super::resources::*;
 use super::world::*;
 
-use super::super::graphics::controls::UserInput;
+use super::super::graphics::controls::GameInput;
 
 pub trait System {
     fn run(
@@ -92,13 +92,13 @@ system_impl!(
     B,
     C,
     (timer, Timer),
-    (user_input, UserInput),
+    (user_input, GameInput),
     (camera, (f32, f32)),
     (control_point, (f32, f32))
 );
 pub fn player_system(
     timer: &mut Timer,
-    user_input: &mut UserInput,
+    user_input: &mut GameInput,
     camera: &mut (f32, f32),
     control_point: &mut (f32, f32),
     pos: &mut Position,
