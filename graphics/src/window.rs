@@ -23,9 +23,7 @@ use wgpu::*;
 
 use super::controls::*;
 use super::sprite::*;
-
-use super::super::ecs::tiles::*;
-use super::super::ecs::world::*;
+use super::tiles::*;
 
 pub struct Graphics {
     event_loop: EventLoop<()>,

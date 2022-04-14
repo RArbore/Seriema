@@ -15,7 +15,7 @@
 use winit::dpi::{PhysicalPosition, PhysicalSize};
 use winit::event::*;
 
-use super::super::ecs::world::PIXEL_SIZE;
+use super::tiles::*;
 
 const NUM_KEYCODES: usize = 164;
 

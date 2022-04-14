@@ -14,7 +14,7 @@
 
 use super::world::*;
 
-use super::super::graphics::*;
+extern crate graphics;
 
 pub trait Component {
     fn get_host_vec(components: &mut Components) -> &mut Vec<Option<Self>>
@@ -48,7 +48,7 @@ impl Component for Velocity {
 
 #[derive(Debug)]
 pub struct Sprite {
-    pub sprite: sprite::Sprite,
+    pub sprite: graphics::sprite::Sprite,
     pub frame: usize,
     pub width: f32,
     pub height: f32,

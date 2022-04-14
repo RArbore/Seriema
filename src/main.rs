@@ -12,8 +12,8 @@
  * along with game-testbed. If not, see <https://www.gnu.org/licenses/>.
  */
 
-mod ecs;
-mod graphics;
+extern crate ecs;
+extern crate graphics;
 
 fn main() {
     let mut world = ecs::World::new();
@@ -79,10 +79,10 @@ fn main() {
 
     world.resources.tiles.insert(
         (0, 0),
-        [[ecs::tiles::Tile::NoTile; ecs::tiles::CHUNK_SIZE]; ecs::tiles::CHUNK_SIZE],
+        [[graphics::tiles::Tile::NoTile; graphics::tiles::CHUNK_SIZE]; graphics::tiles::CHUNK_SIZE],
     );
-    world.resources.tiles.get_mut(&(0, 0)).unwrap()[0][0] = ecs::tiles::Tile::TestTile1;
-    world.resources.tiles.get_mut(&(0, 0)).unwrap()[0][1] = ecs::tiles::Tile::TestTile2;
+    world.resources.tiles.get_mut(&(0, 0)).unwrap()[0][0] = graphics::tiles::Tile::TestTile1;
+    world.resources.tiles.get_mut(&(0, 0)).unwrap()[0][1] = graphics::tiles::Tile::TestTile2;
 
     pollster::block_on(graphics::Graphics::new()).run(move |controller, p_cx, p_cy, p_ax, p_ay| {
         world.run(controller.get_game_input(p_cx, p_cy, p_ax, p_ay))

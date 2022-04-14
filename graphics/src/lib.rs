@@ -15,8 +15,10 @@
 #[macro_use]
 pub mod sprite;
 pub mod controls;
+pub mod tiles;
 pub mod window;
 
 pub use controls::*;
 pub use sprite::*;
+pub use tiles::*;
 pub use window::*;

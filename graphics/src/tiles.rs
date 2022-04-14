@@ -17,6 +17,7 @@ use std::collections::HashMap;
 pub const NUM_TILES: usize = 4;
 pub const TILE_SIZE: usize = 16;
 pub const CHUNK_SIZE: usize = 16;
+pub const PIXEL_SIZE: usize = 4;
 
 #[repr(usize)]
 #[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]

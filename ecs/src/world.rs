@@ -17,12 +17,8 @@ use std::collections::HashMap;
 use super::components::*;
 use super::resources::*;
 use super::systems::*;
-use super::tiles::*;
 
-use super::super::graphics::controls::GameInput;
-use super::super::graphics::sprite::{SpriteBatch, NUM_TEXTURES};
-
-pub const PIXEL_SIZE: usize = 4;
+extern crate graphics;
 
 #[derive(Copy, Clone)]
 pub struct Entity {
@@ -39,10 +35,10 @@ pub struct Components {
 pub struct Resources {
     pub timer: Timer,
     pub sprite_batch_res: SpriteBatchRes,
-    pub user_input: GameInput,
+    pub user_input: graphics::GameInput,
     pub camera: (f32, f32),
     pub control_point: (f32, f32),
-    pub tiles: Tiles,
+    pub tiles: graphics::Tiles,
 }
 
 pub struct World {
@@ -65,8 +61,8 @@ impl World {
             systems: Vec::new(),
             resources: Resources {
                 timer: Timer::new(),
-                sprite_batch_res: SpriteBatchRes::new(0 as *mut SpriteBatch),
-                user_input: GameInput::new(),
+                sprite_batch_res: SpriteBatchRes::new(0 as *mut graphics::SpriteBatch),
+                user_input: graphics::GameInput::new(),
                 camera: (0.0, 0.0),
                 control_point: (0.0, 0.0),
                 tiles: HashMap::new(),
@@ -89,9 +85,19 @@ impl World {
         vec[entity.index] = Some(component);
     }
 
-    pub fn run(&mut self, input: GameInput) -> (SpriteBatch, TileBatch, f32, f32, f32, f32) {
+    pub fn run(
+        &mut self,
+        input: graphics::GameInput,
+    ) -> (
+        graphics::SpriteBatch,
+        graphics::TileBatch,
+        f32,
+        f32,
+        f32,
+        f32,
+    ) {
         self.resources.timer.update_dt();
-        let mut sprite_batch: SpriteBatch = vec![vec![]; NUM_TEXTURES];
+        let mut sprite_batch: graphics::SpriteBatch = vec![vec![]; graphics::NUM_TEXTURES];
         self.resources.sprite_batch_res = SpriteBatchRes::new(&mut sprite_batch);
         self.resources.user_input = input;
 
@@ -105,15 +111,15 @@ impl World {
             }
         }
 
-        let mut tile_batch: TileBatch = vec![];
+        let mut tile_batch: graphics::TileBatch = vec![];
         for (coords, data) in self.resources.tiles.iter() {
-            for r in 0..CHUNK_SIZE {
-                for c in 0..CHUNK_SIZE {
-                    if data[r][c] != Tile::NoTile {
+            for r in 0..graphics::CHUNK_SIZE {
+                for c in 0..graphics::CHUNK_SIZE {
+                    if data[r][c] != graphics::Tile::NoTile {
                         tile_batch.push((
                             data[r][c] as usize,
-                            coords.0 * CHUNK_SIZE + r,
-                            coords.1 * CHUNK_SIZE + c,
+                            coords.0 * graphics::CHUNK_SIZE + r,
+                            coords.1 * graphics::CHUNK_SIZE + c,
                         ));
                     }
                 }

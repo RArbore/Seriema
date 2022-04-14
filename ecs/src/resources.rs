@@ -14,7 +14,7 @@
 
 use std::time::Instant;
 
-use super::super::graphics::sprite::*;
+extern crate graphics;
 
 pub struct Timer {
     start: Instant,
@@ -56,15 +56,23 @@ impl Timer {
 }
 
 pub struct SpriteBatchRes {
-    pub sprite_batch: *mut SpriteBatch,
+    pub sprite_batch: *mut graphics::SpriteBatch,
 }
 
 impl SpriteBatchRes {
-    pub fn new(sprite_batch: *mut SpriteBatch) -> Self {
+    pub fn new(sprite_batch: *mut graphics::SpriteBatch) -> Self {
         SpriteBatchRes { sprite_batch }
     }
 
-    pub fn insert(&mut self, sprite: Sprite, frame: usize, x: f32, y: f32, w: f32, h: f32) {
+    pub fn insert(
+        &mut self,
+        sprite: graphics::Sprite,
+        frame: usize,
+        x: f32,
+        y: f32,
+        w: f32,
+        h: f32,
+    ) {
         unsafe {
             (*self.sprite_batch)[sprite as usize].push((frame, x, y, w, h));
         }
