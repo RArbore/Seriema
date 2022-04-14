@@ -164,9 +164,9 @@ impl Context {
         let (textures, texture_bind_groups, texture_bind_group_layouts) = create_textures!(
             &device,
             &queue,
-            "../../assets/test-tileset.png",
-            "../../assets/test-sprite1.png",
-            "../../assets/test-sprite2.png"
+            "../../assets/gen/test-tileset.png",
+            "../../assets/gen/test-sprite1.png",
+            "../../assets/gen/test-sprite2.png"
         );
 
         let vertex_buffers = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
