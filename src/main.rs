@@ -84,5 +84,7 @@ fn main() {
     world.resources.tiles.get_mut(&(0, 0)).unwrap()[0][0] = ecs::tiles::Tile::TestTile1;
     world.resources.tiles.get_mut(&(0, 0)).unwrap()[0][1] = ecs::tiles::Tile::TestTile2;
 
-    pollster::block_on(graphics::Graphics::new()).run(move |user_input| world.run(user_input));
+    pollster::block_on(graphics::Graphics::new()).run(move |controller, p_cx, p_cy, p_ax, p_ay| {
+        world.run(controller.get_game_input(p_cx, p_cy, p_ax, p_ay))
+    });
 }

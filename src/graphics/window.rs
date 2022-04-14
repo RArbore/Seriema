@@ -71,7 +71,10 @@ impl Graphics {
         }
     }
 
-    pub fn run<F: FnMut(GameInput) -> (SpriteBatch, TileBatch, f32, f32, f32, f32) + 'static>(
+    pub fn run<
+        F: FnMut(&Controller, f32, f32, f32, f32) -> (SpriteBatch, TileBatch, f32, f32, f32, f32)
+            + 'static,
+    >(
         mut self,
         mut tick: F,
     ) {
@@ -107,7 +110,7 @@ impl Graphics {
                 }
                 Event::RedrawRequested(window_id) if window_id == self.window.id() => {
                     let (sprites, tiles, cx, cy, ax, ay) =
-                        tick(self.controller.get_game_input(p_cx, p_cy, p_ax, p_ay));
+                        tick(&self.controller, p_cx, p_cy, p_ax, p_ay);
                     match self.context.render(sprites, tiles, cx, cy) {
                         Ok(_) => {}
                         Err(wgpu::SurfaceError::Lost) => self.context.resize(self.context.size),
