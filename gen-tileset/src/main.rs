@@ -12,4 +12,16 @@
  * along with game-testbed. If not, see <https://www.gnu.org/licenses/>.
  */
 
-fn main() {}
+use std::env::*;
+
+use image::io::Reader;
+
+fn main() {
+    let args: Vec<String> = args().collect();
+    for arg in args[1..].iter() {
+        let img = Reader::open(arg)
+            .expect(&format!("Couldn't open file: {}.", arg)[..])
+            .decode()
+            .expect(&format!("File couldn't be coded: {}.", arg)[..]);
+    }
+}

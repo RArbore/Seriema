@@ -1,6 +1,6 @@
 [workspace]
 members = [
-  "gen-tex"
+  "gen-tileset"
 ]
 
 [package]
