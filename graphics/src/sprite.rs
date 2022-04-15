@@ -17,7 +17,7 @@ use wgpu::{BindGroup, BindGroupLayout, Device};
 use image::GenericImageView;
 use image::ImageResult;
 
-pub const NUM_TEXTURES: usize = 2;
+pub const NUM_SPRITES: usize = 2;
 
 #[repr(usize)]
 #[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]

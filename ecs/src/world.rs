@@ -97,7 +97,7 @@ impl World {
         f32,
     ) {
         self.resources.timer.update_dt();
-        let mut sprite_batch: graphics::SpriteBatch = vec![vec![]; graphics::NUM_TEXTURES];
+        let mut sprite_batch: graphics::SpriteBatch = vec![vec![]; graphics::NUM_SPRITES];
         self.resources.sprite_batch_res = SpriteBatchRes::new(&mut sprite_batch);
         self.resources.user_input = input;
 
@@ -111,13 +111,13 @@ impl World {
             }
         }
 
-        let mut tile_batch: graphics::TileBatch = vec![];
+        let mut tile_batch: graphics::TileBatch = vec![vec![]; graphics::NUM_TILES];
         for (coords, data) in self.resources.tiles.iter() {
             for r in 0..graphics::CHUNK_SIZE {
                 for c in 0..graphics::CHUNK_SIZE {
-                    if data[r][c] != graphics::Tile::NoTile {
-                        tile_batch.push((
-                            data[r][c] as usize,
+                    if data[r][c].0 != graphics::Tile::NoTile {
+                        tile_batch[data[r][c].0 as usize].push((
+                            data[r][c].1,
                             coords.0 * graphics::CHUNK_SIZE + r,
                             coords.1 * graphics::CHUNK_SIZE + c,
                         ));

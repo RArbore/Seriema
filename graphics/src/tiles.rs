@@ -14,7 +14,8 @@
 
 use std::collections::HashMap;
 
-pub const NUM_TILES: usize = 4;
+pub const NUM_TILES: usize = 1;
+pub const NUM_TILE_VERSIONS: usize = 256;
 pub const TILE_SIZE: usize = 16;
 pub const CHUNK_SIZE: usize = 16;
 pub const PIXEL_SIZE: usize = 4;
@@ -23,12 +24,9 @@ pub const PIXEL_SIZE: usize = 4;
 #[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]
 pub enum Tile {
     TestTile1,
-    TestTile2,
-    TestTile3,
-    TestTile4,
     NoTile,
 }
 
-pub type Tiles = HashMap<(usize, usize), [[Tile; CHUNK_SIZE]; CHUNK_SIZE]>;
+pub type Tiles = HashMap<(usize, usize), [[(Tile, usize); CHUNK_SIZE]; CHUNK_SIZE]>;
 
-pub type TileBatch = Vec<(usize, usize, usize)>;
+pub type TileBatch = Vec<Vec<(usize, usize, usize)>>;

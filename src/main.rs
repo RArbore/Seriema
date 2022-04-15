@@ -79,10 +79,11 @@ fn main() {
 
     world.resources.tiles.insert(
         (0, 0),
-        [[graphics::tiles::Tile::NoTile; graphics::tiles::CHUNK_SIZE]; graphics::tiles::CHUNK_SIZE],
+        [[(graphics::tiles::Tile::NoTile, 0); graphics::tiles::CHUNK_SIZE];
+            graphics::tiles::CHUNK_SIZE],
     );
-    world.resources.tiles.get_mut(&(0, 0)).unwrap()[0][0] = graphics::tiles::Tile::TestTile1;
-    world.resources.tiles.get_mut(&(0, 0)).unwrap()[0][1] = graphics::tiles::Tile::TestTile2;
+    world.resources.tiles.get_mut(&(0, 0)).unwrap()[0][0] = (graphics::tiles::Tile::TestTile1, 0);
+    world.resources.tiles.get_mut(&(0, 0)).unwrap()[0][1] = (graphics::tiles::Tile::TestTile1, 1);
 
     pollster::block_on(graphics::Graphics::new()).run(move |controller, p_cx, p_cy, p_ax, p_ay| {
         world.run(controller.get_game_input(p_cx, p_cy, p_ax, p_ay))

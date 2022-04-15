@@ -164,7 +164,7 @@ impl Context {
         let (textures, texture_bind_groups, texture_bind_group_layouts) = create_textures!(
             &device,
             &queue,
-            "../../assets/gen/test-tileset.png",
+            "../../assets/gen/test-tileset1.png",
             "../../assets/gen/test-sprite1.png",
             "../../assets/gen/test-sprite2.png"
         );
@@ -413,21 +413,24 @@ impl Context {
                     (count * std::mem::size_of::<super::sprite::Instance>()) as u64,
                     bytemuck::cast_slice(instances.as_ref()),
                 );
-                render_pass.set_bind_group(0, &self.texture_bind_groups[i + 1], &[]);
+                render_pass.set_bind_group(0, &self.texture_bind_groups[i + NUM_TILES], &[]);
                 render_pass.draw(0..4, (count as u32)..(count + instances.len()) as u32);
                 count += instances.len();
             }
 
-            if tiles.len() > 0 {
-                let instances: Vec<_> = tiles
+            for i in 0..tiles.len() {
+                if tiles[i].len() == 0 {
+                    continue;
+                }
+                let instances: Vec<_> = tiles[i]
                     .iter()
-                    .map(|(tile, x, y)| super::sprite::Instance {
-                        texoffset: *tile as f32 / NUM_TILES as f32,
-                        texwidth: 1.0 / NUM_TILES as f32,
+                    .map(|(version, x, y)| super::sprite::Instance {
+                        texoffset: *version as f32 / NUM_TILE_VERSIONS as f32,
+                        texwidth: 1.0 / NUM_TILE_VERSIONS as f32,
                         x: ((*x * PIXEL_SIZE + PIXEL_SIZE / 2) * TILE_SIZE) as f32,
                         y: ((*y * PIXEL_SIZE + PIXEL_SIZE / 2) * TILE_SIZE) as f32,
                         w: (self.textures[0].dimensions.0 as usize * PIXEL_SIZE) as f32
-                            / NUM_TILES as f32,
+                            / NUM_TILE_VERSIONS as f32,
                         h: (self.textures[0].dimensions.1 as usize * PIXEL_SIZE) as f32,
                         ww: self.size.width as f32,
                         wh: self.size.height as f32,
@@ -438,8 +441,9 @@ impl Context {
                     (count * std::mem::size_of::<super::sprite::Instance>()) as u64,
                     bytemuck::cast_slice(instances.as_ref()),
                 );
-                render_pass.set_bind_group(0, &self.texture_bind_groups[0], &[]);
+                render_pass.set_bind_group(0, &self.texture_bind_groups[i], &[]);
                 render_pass.draw(0..4, (count as u32)..(count + instances.len()) as u32);
+                count += instances.len();
             }
         }
 
