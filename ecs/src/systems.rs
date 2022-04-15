@@ -70,25 +70,36 @@ pub fn print_fps(timer: &mut Timer) {
     }
 }
 
-system_impl!(A, B, (timer, Timer));
-pub fn update_aabb(timer: &mut Timer, aabb: &mut AABB, vel: &mut Velocity) {
+system_impl!(A, B, (timer, Timer), (tiles, graphics::Tiles));
+pub fn update_aabb(
+    timer: &mut Timer,
+    tiles: &mut graphics::Tiles,
+    aabb: &mut AABB,
+    vel: &mut Velocity,
+) {
     aabb.x += vel.x * timer.dt();
     aabb.y += vel.y * timer.dt();
-    match correct_collision(
-        aabb,
-        &mut AABB {
-            x: 8.0,
-            y: 8.0,
-            w: 16.0,
-            h: 16.0,
-        },
-    ) {
-        Correction::None => {}
-        Correction::Horizontal => {
-            vel.x = 0.0;
+    let tiles_to_check = get_all_tiles_in_aabb(aabb, tiles);
+    for (tile_id, ux, uy) in tiles_to_check {
+        if tile_id == graphics::Tile::NoTile {
+            continue;
         }
-        Correction::Vertical => {
-            vel.y = 0.0;
+        match correct_collision(
+            aabb,
+            &mut AABB {
+                x: (ux * graphics::TILE_SIZE + graphics::TILE_SIZE / 2) as f32,
+                y: (uy * graphics::TILE_SIZE + graphics::TILE_SIZE / 2) as f32,
+                w: graphics::TILE_SIZE as f32,
+                h: graphics::TILE_SIZE as f32,
+            },
+        ) {
+            Correction::None => {}
+            Correction::Horizontal => {
+                vel.x = 0.0;
+            }
+            Correction::Vertical => {
+                vel.y = 0.0;
+            }
         }
     }
 }

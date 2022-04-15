@@ -64,7 +64,8 @@ fn main() {
     world.insert(entity, ecs::Player {});
 
     world.systems.push(Box::new(
-        ecs::update_aabb as fn(&mut ecs::Timer, &mut ecs::AABB, &mut ecs::Velocity),
+        ecs::update_aabb
+            as fn(&mut ecs::Timer, &mut graphics::Tiles, &mut ecs::AABB, &mut ecs::Velocity),
     ));
     world
         .systems
