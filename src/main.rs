@@ -22,7 +22,7 @@ fn main() {
         let entity = world.add();
         world.insert(
         entity,
-        ecs::Position {
+        ecs::AABB {
         x: -2000.0 + ((i / 101) as f32) * 64.0,
         y: -2000.0 + ((i % 101) as f32) * 64.0,
     },
@@ -42,7 +42,15 @@ fn main() {
          */
 
     let entity = world.add();
-    world.insert(entity, ecs::Position { x: 16.0, y: 16.0 });
+    world.insert(
+        entity,
+        ecs::AABB {
+            x: 16.0,
+            y: 16.0,
+            w: 16.0,
+            h: 16.0,
+        },
+    );
     world.insert(entity, ecs::Velocity { x: 1.0, y: 0.0 });
     world.insert(
         entity,
@@ -56,13 +64,13 @@ fn main() {
     world.insert(entity, ecs::Player {});
 
     world.systems.push(Box::new(
-        ecs::update_pos as fn(&mut ecs::Timer, &mut ecs::Position, &mut ecs::Velocity),
+        ecs::update_aabb as fn(&mut ecs::Timer, &mut ecs::AABB, &mut ecs::Velocity),
     ));
     world
         .systems
         .push(Box::new(ecs::print_fps as fn(&mut ecs::Timer)));
     world.systems.push(Box::new(
-        ecs::render_sprite as fn(&mut ecs::SpriteBatchRes, &mut ecs::Position, &mut ecs::Sprite),
+        ecs::render_sprite as fn(&mut ecs::SpriteBatchRes, &mut ecs::AABB, &mut ecs::Sprite),
     ));
     world.systems.push(Box::new(
         ecs::player_system
@@ -71,7 +79,7 @@ fn main() {
                 &mut graphics::GameInput,
                 &mut (f32, f32),
                 &mut (f32, f32),
-                &mut ecs::Position,
+                &mut ecs::AABB,
                 &mut ecs::Velocity,
                 &mut ecs::Player,
             ),
@@ -82,8 +90,10 @@ fn main() {
         [[(graphics::tiles::Tile::NoTile, 0); graphics::tiles::CHUNK_SIZE];
             graphics::tiles::CHUNK_SIZE],
     );
-    world.resources.tiles.get_mut(&(0, 0)).unwrap()[0][0] = (graphics::tiles::Tile::TestTile1, 0);
-    world.resources.tiles.get_mut(&(0, 0)).unwrap()[0][1] = (graphics::tiles::Tile::TestTile1, 1);
+    world.resources.tiles.get_mut(&(0, 0)).unwrap()[0][0] =
+        (graphics::tiles::Tile::TestTile1, 0x04);
+    world.resources.tiles.get_mut(&(0, 0)).unwrap()[0][1] =
+        (graphics::tiles::Tile::TestTile1, 0x40);
 
     pollster::block_on(graphics::Graphics::new()).run(move |controller, p_cx, p_cy, p_ax, p_ay| {
         world.run(controller.get_game_input(p_cx, p_cy, p_ax, p_ay))

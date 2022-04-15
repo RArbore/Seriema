@@ -15,9 +15,11 @@
 pub mod components;
 pub mod resources;
 pub mod systems;
+pub mod util;
 pub mod world;
 
 pub use components::*;
 pub use resources::*;
 pub use systems::*;
+pub use util::*;
 pub use world::*;

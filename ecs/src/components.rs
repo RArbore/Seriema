@@ -23,14 +23,16 @@ pub trait Component {
 }
 
 #[derive(Debug)]
-pub struct Position {
+pub struct AABB {
     pub x: f32,
     pub y: f32,
+    pub w: f32,
+    pub h: f32,
 }
 
-impl Component for Position {
-    fn get_host_vec(components: &mut Components) -> &mut Vec<Option<Position>> {
-        &mut components.positions
+impl Component for AABB {
+    fn get_host_vec(components: &mut Components) -> &mut Vec<Option<AABB>> {
+        &mut components.aabbs
     }
 }
 

@@ -26,7 +26,7 @@ pub struct Entity {
 }
 
 pub struct Components {
-    pub positions: Vec<Option<Position>>,
+    pub aabbs: Vec<Option<AABB>>,
     pub velocities: Vec<Option<Velocity>>,
     pub sprites: Vec<Option<Sprite>>,
     pub players: Vec<Option<Player>>,
@@ -52,7 +52,7 @@ impl World {
     pub fn new() -> Self {
         Self {
             components: Components {
-                positions: Vec::new(),
+                aabbs: Vec::new(),
                 velocities: Vec::new(),
                 sprites: Vec::new(),
                 players: Vec::new(),
@@ -71,7 +71,7 @@ impl World {
     }
 
     pub fn add(&mut self) -> Entity {
-        self.components.positions.push(None);
+        self.components.aabbs.push(None);
         self.components.velocities.push(None);
         self.components.sprites.push(None);
         self.components.players.push(None);
