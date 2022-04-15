@@ -74,7 +74,7 @@ system_impl!(A, B, (timer, Timer));
 pub fn update_aabb(timer: &mut Timer, aabb: &mut AABB, vel: &mut Velocity) {
     aabb.x += vel.x * timer.dt();
     aabb.y += vel.y * timer.dt();
-    correct_collision(
+    match correct_collision(
         aabb,
         &mut AABB {
             x: 8.0,
@@ -82,7 +82,15 @@ pub fn update_aabb(timer: &mut Timer, aabb: &mut AABB, vel: &mut Velocity) {
             w: 16.0,
             h: 16.0,
         },
-    );
+    ) {
+        Correction::None => {}
+        Correction::Horizontal => {
+            vel.x = 0.0;
+        }
+        Correction::Vertical => {
+            vel.y = 0.0;
+        }
+    }
 }
 
 system_impl!(A, B, (sprite_batch_res, SpriteBatchRes));

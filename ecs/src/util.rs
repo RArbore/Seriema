@@ -14,55 +14,77 @@
 
 use super::components::*;
 
-fn correct_left(aabb1: &mut AABB, aabb2: &mut AABB) {
+pub enum Correction {
+    None,
+    Horizontal,
+    Vertical,
+}
+
+fn correct_left(aabb1: &mut AABB, aabb2: &mut AABB) -> Correction {
     if aabb1.x + aabb1.w / 2.0 > aabb2.x - aabb2.w / 2.0
         && (aabb1.y - aabb2.y).abs() < (aabb1.h + aabb2.h) / 2.0
     {
         aabb1.x = aabb2.x - (aabb1.w + aabb2.w) / 2.0;
+        println!("correct_left");
+        Correction::Horizontal
+    } else {
+        Correction::None
     }
 }
 
-fn correct_up(aabb1: &mut AABB, aabb2: &mut AABB) {
+fn correct_up(aabb1: &mut AABB, aabb2: &mut AABB) -> Correction {
     if aabb1.y + aabb1.h / 2.0 > aabb2.y - aabb2.h / 2.0
         && (aabb1.x - aabb2.x).abs() < (aabb1.w + aabb2.w) / 2.0
     {
         aabb1.y = aabb2.y - (aabb1.h + aabb2.h) / 2.0;
+        println!("correct_up");
+        Correction::Vertical
+    } else {
+        Correction::None
     }
 }
 
-fn correct_right(aabb1: &mut AABB, aabb2: &mut AABB) {
+fn correct_right(aabb1: &mut AABB, aabb2: &mut AABB) -> Correction {
     if aabb1.x - aabb1.w / 2.0 < aabb2.x + aabb2.w / 2.0
         && (aabb1.y - aabb2.y).abs() < (aabb1.h + aabb2.h) / 2.0
     {
         aabb1.x = aabb2.x + (aabb1.w + aabb2.w) / 2.0;
+        println!("correct_right");
+        Correction::Horizontal
+    } else {
+        Correction::None
     }
 }
 
-fn correct_down(aabb1: &mut AABB, aabb2: &mut AABB) {
+fn correct_down(aabb1: &mut AABB, aabb2: &mut AABB) -> Correction {
     if aabb1.y - aabb1.h / 2.0 < aabb2.y + aabb2.h / 2.0
         && (aabb1.x - aabb2.x).abs() < (aabb1.w + aabb2.w) / 2.0
     {
         aabb1.y = aabb2.y + (aabb1.h + aabb2.h) / 2.0;
+        println!("correct_down");
+        Correction::Vertical
+    } else {
+        Correction::None
     }
 }
 
-pub fn correct_collision(aabb1: &mut AABB, aabb2: &mut AABB) {
+pub fn correct_collision(aabb1: &mut AABB, aabb2: &mut AABB) -> Correction {
     if aabb1.x < aabb2.x {
         if aabb1.y < aabb2.y {
             if (aabb1.x + aabb1.w / 2.0) - (aabb2.x - aabb2.w / 2.0)
                 < (aabb1.y + aabb1.h / 2.0) - (aabb2.y - aabb2.h / 2.0)
             {
-                correct_left(aabb1, aabb2);
+                correct_left(aabb1, aabb2)
             } else {
-                correct_up(aabb1, aabb2);
+                correct_up(aabb1, aabb2)
             }
         } else {
             if (aabb1.x + aabb1.w / 2.0) - (aabb2.x - aabb2.w / 2.0)
                 < (aabb2.y + aabb2.h / 2.0) - (aabb1.y - aabb1.h / 2.0)
             {
-                correct_left(aabb1, aabb2);
+                correct_left(aabb1, aabb2)
             } else {
-                correct_down(aabb1, aabb2);
+                correct_down(aabb1, aabb2)
             }
         }
     } else {
@@ -70,17 +92,17 @@ pub fn correct_collision(aabb1: &mut AABB, aabb2: &mut AABB) {
             if (aabb2.x + aabb2.w / 2.0) - (aabb1.x - aabb1.w / 2.0)
                 < (aabb1.y + aabb1.h / 2.0) - (aabb2.y - aabb2.h / 2.0)
             {
-                correct_right(aabb1, aabb2);
+                correct_right(aabb1, aabb2)
             } else {
-                correct_up(aabb1, aabb2);
+                correct_up(aabb1, aabb2)
             }
         } else {
             if (aabb2.x + aabb2.w / 2.0) - (aabb1.x - aabb1.w / 2.0)
                 < (aabb2.y + aabb2.h / 2.0) - (aabb1.y - aabb1.h / 2.0)
             {
-                correct_right(aabb1, aabb2);
+                correct_right(aabb1, aabb2)
             } else {
-                correct_down(aabb1, aabb2);
+                correct_down(aabb1, aabb2)
             }
         }
     }
