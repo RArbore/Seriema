@@ -37,28 +37,59 @@ pub enum QuadEdgeType {
 }
 
 fn num_to_edges(n: u8) -> [QuadEdgeType; 4] {
+    // n | MASK == 0 means there is not a similar neighbor in the MASK direction
     let mut ret = [
-        if n | UP_LEFT_MASK != 0 {
+        if n | UP_LEFT_MASK == 0 {
             QuadEdgeType::Diag
         } else {
             QuadEdgeType::Clean
         },
-        if n | UP_RIGHT_MASK != 0 {
+        if n | UP_RIGHT_MASK == 0 {
             QuadEdgeType::Diag
         } else {
             QuadEdgeType::Clean
         },
-        if n | DOWN_LEFT_MASK != 0 {
+        if n | DOWN_LEFT_MASK == 0 {
             QuadEdgeType::Diag
         } else {
             QuadEdgeType::Clean
         },
-        if n | DOWN_RIGHT_MASK != 0 {
+        if n | DOWN_RIGHT_MASK == 0 {
             QuadEdgeType::Diag
         } else {
             QuadEdgeType::Clean
         },
     ];
+
+    if n | LEFT_MASK == 0 {
+        ret[0] = QuadEdgeType::Horiz;
+        ret[2] = QuadEdgeType::Horiz;
+    }
+    if n | RIGHT_MASK == 0 {
+        ret[1] = QuadEdgeType::Horiz;
+        ret[3] = QuadEdgeType::Horiz;
+    }
+    if n | UP_MASK == 0 {
+        ret[0] = QuadEdgeType::Vert;
+        ret[1] = QuadEdgeType::Vert;
+    }
+    if n | DOWN_MASK == 0 {
+        ret[2] = QuadEdgeType::Vert;
+        ret[3] = QuadEdgeType::Vert;
+    }
+
+    if n | LEFT_MASK == 0 && n | UP_MASK == 0 {
+        ret[0] = QuadEdgeType::Full;
+    }
+    if n | RIGHT_MASK == 0 && n | UP_MASK == 0 {
+        ret[1] = QuadEdgeType::Full;
+    }
+    if n | LEFT_MASK == 0 && n | DOWN_MASK == 0 {
+        ret[2] = QuadEdgeType::Full;
+    }
+    if n | RIGHT_MASK == 0 && n | DOWN_MASK == 0 {
+        ret[3] = QuadEdgeType::Full;
+    }
 
     ret
 }
