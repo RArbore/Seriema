@@ -49,6 +49,7 @@ fn main() {
             y: 32.0,
             w: 16.0,
             h: 16.0,
+            last: ecs::Correction::None,
         },
     );
     world.insert(entity, ecs::Velocity { x: 0.0, y: 0.0 });
@@ -61,7 +62,7 @@ fn main() {
             height: 1.0,
         },
     );
-    world.insert(entity, ecs::Player {});
+    world.insert(entity, ecs::Player { can_jump: 0.0 });
 
     world.systems.push(Box::new(
         ecs::update_aabb

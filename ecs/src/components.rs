@@ -12,6 +12,7 @@
  * along with game-testbed. If not, see <https://www.gnu.org/licenses/>.
  */
 
+use super::util::*;
 use super::world::*;
 
 extern crate graphics;
@@ -28,6 +29,7 @@ pub struct AABB {
     pub y: f32,
     pub w: f32,
     pub h: f32,
+    pub last: Correction,
 }
 
 impl Component for AABB {
@@ -63,7 +65,9 @@ impl Component for Sprite {
 }
 
 #[derive(Debug)]
-pub struct Player {}
+pub struct Player {
+    pub can_jump: f32,
+}
 
 impl Component for Player {
     fn get_host_vec(components: &mut Components) -> &mut Vec<Option<Player>> {

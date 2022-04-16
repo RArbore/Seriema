@@ -79,26 +79,31 @@ pub fn update_aabb(
 ) {
     aabb.x += vel.x * timer.dt();
     aabb.y += vel.y * timer.dt();
+    aabb.last = Correction::None;
     let tiles_to_check = get_all_tiles_in_aabb(aabb, tiles);
     for (tile_id, ux, uy) in tiles_to_check {
         if tile_id == graphics::Tile::NoTile {
             continue;
         }
-        match correct_collision(
+        let correction = correct_collision(
             aabb,
             &mut AABB {
                 x: (ux * graphics::TILE_SIZE + graphics::TILE_SIZE / 2) as f32,
                 y: (uy * graphics::TILE_SIZE + graphics::TILE_SIZE / 2) as f32,
                 w: graphics::TILE_SIZE as f32,
                 h: graphics::TILE_SIZE as f32,
+                last: Correction::None,
             },
-        ) {
+        );
+        match correction {
             Correction::None => {}
-            Correction::Horizontal => {
+            Correction::Left | Correction::Right => {
                 vel.x = 0.0;
+                aabb.last = correction;
             }
-            Correction::Vertical => {
+            Correction::Up | Correction::Down => {
                 vel.y = 0.0;
+                aabb.last = correction;
             }
         }
     }
@@ -132,8 +137,16 @@ pub fn player_system(
     control_point: &mut (f32, f32),
     aabb: &mut AABB,
     vel: &mut Velocity,
-    _player: &mut Player,
+    player: &mut Player,
 ) {
+    if aabb.last == Correction::Up {
+        player.can_jump = 0.1;
+    } else if player.can_jump > 0.0 {
+        player.can_jump -= timer.dt();
+    } else {
+        player.can_jump = 0.0;
+    }
+    println!("{:?}", player.can_jump);
     vel.y -= (if game_input.crouch { 400.0 } else { 200.0 }) * timer.dt();
     vel.x = 0.0;
     if game_input.left {
@@ -142,8 +155,9 @@ pub fn player_system(
     if game_input.right {
         vel.x += 100.0;
     }
-    if game_input.jump {
+    if game_input.jump && player.can_jump > 0.0 {
         vel.y = 100.0;
+        player.can_jump = 0.0;
     }
     camera.0 = aabb.x;
     camera.1 = aabb.y;
