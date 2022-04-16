@@ -29,4 +29,4 @@ pub enum Tile {
 
 pub type Tiles = HashMap<(usize, usize), [[(Tile, usize); CHUNK_SIZE]; CHUNK_SIZE]>;
 
-pub type TileBatch = Vec<Vec<(usize, usize, usize)>>;
+pub type TileBatch = [Vec<(usize, usize, usize)>; NUM_TILES];
