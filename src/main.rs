@@ -95,6 +95,10 @@ fn main() {
     for i in 0..16 {
         world.resources.tiles.get_mut(&(0, 0)).unwrap()[i][0] =
             (graphics::tiles::Tile::TestTile1, 0xFF);
+        world.resources.tiles.get_mut(&(0, 0)).unwrap()[0][i] =
+            (graphics::tiles::Tile::TestTile1, 0xFF);
+        world.resources.tiles.get_mut(&(0, 0)).unwrap()[15][i] =
+            (graphics::tiles::Tile::TestTile1, 0xFF);
     }
 
     pollster::block_on(graphics::Graphics::new()).run(move |controller, p_cx, p_cy, p_ax, p_ay| {

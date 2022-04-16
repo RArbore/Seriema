@@ -69,23 +69,35 @@ fn correct_down(aabb1: &mut AABB, aabb2: &mut AABB) -> Correction {
     }
 }
 
-pub fn correct_collision(aabb1: &mut AABB, aabb2: &mut AABB) -> Correction {
+pub fn correct_collision(aabb1: &mut AABB, aabb2: &mut AABB) -> (Correction, f32) {
     if aabb1.x < aabb2.x {
         if aabb1.y < aabb2.y {
             if (aabb1.x + aabb1.w / 2.0) - (aabb2.x - aabb2.w / 2.0)
                 < (aabb1.y + aabb1.h / 2.0) - (aabb2.y - aabb2.h / 2.0)
             {
-                correct_left(aabb1, aabb2)
+                let area = (((aabb1.x + aabb1.w / 2.0) - (aabb2.x - aabb2.w / 2.0))
+                    * ((aabb1.y + aabb1.h / 2.0) - (aabb2.y - aabb2.h / 2.0)))
+                    .abs();
+                (correct_left(aabb1, aabb2), area)
             } else {
-                correct_down(aabb1, aabb2)
+                let area = (((aabb1.x + aabb1.w / 2.0) - (aabb2.x - aabb2.w / 2.0))
+                    * ((aabb1.y + aabb1.h / 2.0) - (aabb2.y - aabb2.h / 2.0)))
+                    .abs();
+                (correct_down(aabb1, aabb2), area)
             }
         } else {
             if (aabb1.x + aabb1.w / 2.0) - (aabb2.x - aabb2.w / 2.0)
                 < (aabb2.y + aabb2.h / 2.0) - (aabb1.y - aabb1.h / 2.0)
             {
-                correct_left(aabb1, aabb2)
+                let area = (((aabb1.x + aabb1.w / 2.0) - (aabb2.x - aabb2.w / 2.0))
+                    * ((aabb2.y + aabb2.h / 2.0) - (aabb1.y - aabb1.h / 2.0)))
+                    .abs();
+                (correct_left(aabb1, aabb2), area)
             } else {
-                correct_up(aabb1, aabb2)
+                let area = (((aabb1.x + aabb1.w / 2.0) - (aabb2.x - aabb2.w / 2.0))
+                    * ((aabb2.y + aabb2.h / 2.0) - (aabb1.y - aabb1.h / 2.0)))
+                    .abs();
+                (correct_up(aabb1, aabb2), area)
             }
         }
     } else {
@@ -93,17 +105,29 @@ pub fn correct_collision(aabb1: &mut AABB, aabb2: &mut AABB) -> Correction {
             if (aabb2.x + aabb2.w / 2.0) - (aabb1.x - aabb1.w / 2.0)
                 < (aabb1.y + aabb1.h / 2.0) - (aabb2.y - aabb2.h / 2.0)
             {
-                correct_right(aabb1, aabb2)
+                let area = (((aabb2.x + aabb2.w / 2.0) - (aabb1.x - aabb1.w / 2.0))
+                    * ((aabb1.y + aabb1.h / 2.0) - (aabb2.y - aabb2.h / 2.0)))
+                    .abs();
+                (correct_right(aabb1, aabb2), area)
             } else {
-                correct_down(aabb1, aabb2)
+                let area = (((aabb2.x + aabb2.w / 2.0) - (aabb1.x - aabb1.w / 2.0))
+                    * ((aabb1.y + aabb1.h / 2.0) - (aabb2.y - aabb2.h / 2.0)))
+                    .abs();
+                (correct_down(aabb1, aabb2), area)
             }
         } else {
             if (aabb2.x + aabb2.w / 2.0) - (aabb1.x - aabb1.w / 2.0)
                 < (aabb2.y + aabb2.h / 2.0) - (aabb1.y - aabb1.h / 2.0)
             {
-                correct_right(aabb1, aabb2)
+                let area = (((aabb2.x + aabb2.w / 2.0) - (aabb1.x - aabb1.w / 2.0))
+                    * ((aabb2.y + aabb2.h / 2.0) - (aabb1.y - aabb1.h / 2.0)))
+                    .abs();
+                (correct_right(aabb1, aabb2), area)
             } else {
-                correct_up(aabb1, aabb2)
+                let area = (((aabb2.x + aabb2.w / 2.0) - (aabb1.x - aabb1.w / 2.0))
+                    * ((aabb2.y + aabb2.h / 2.0) - (aabb1.y - aabb1.h / 2.0)))
+                    .abs();
+                (correct_up(aabb1, aabb2), area)
             }
         }
     }

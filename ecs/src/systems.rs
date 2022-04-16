@@ -80,12 +80,13 @@ pub fn update_aabb(
     aabb.x += vel.x * timer.dt();
     aabb.y += vel.y * timer.dt();
     aabb.last = Correction::None;
+    let mut last_area: f32 = 0.0;
     let tiles_to_check = get_all_tiles_in_aabb(aabb, tiles);
     for (tile_id, ux, uy) in tiles_to_check {
         if tile_id == graphics::Tile::NoTile {
             continue;
         }
-        let correction = correct_collision(
+        let (correction, area) = correct_collision(
             aabb,
             &mut AABB {
                 x: (ux * graphics::TILE_SIZE + graphics::TILE_SIZE / 2) as f32,
@@ -95,17 +96,19 @@ pub fn update_aabb(
                 last: Correction::None,
             },
         );
-        match correction {
-            Correction::None => {}
-            Correction::Left | Correction::Right => {
-                vel.x = 0.0;
-                aabb.last = correction;
-            }
-            Correction::Up | Correction::Down => {
-                vel.y = 0.0;
-                aabb.last = correction;
-            }
+        if correction != Correction::None && area > last_area {
+            aabb.last = correction;
+            last_area = area;
         }
+    }
+    match aabb.last {
+        Correction::Left | Correction::Right => {
+            vel.x = 0.0;
+        }
+        Correction::Up | Correction::Down => {
+            vel.y = 0.0;
+        }
+        _ => {}
     }
 }
 
@@ -146,7 +149,6 @@ pub fn player_system(
     } else {
         player.can_jump = 0.0;
     }
-    println!("{:?}", player.can_jump);
     vel.y -= (if game_input.crouch { 400.0 } else { 200.0 }) * timer.dt();
     vel.x = 0.0;
     if game_input.left {
