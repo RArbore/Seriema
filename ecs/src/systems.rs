@@ -80,25 +80,50 @@ pub fn update_aabb(
     aabb.x += vel.x * timer.dt();
     aabb.y += vel.y * timer.dt();
     aabb.last = Correction::None;
+    let mut tiles_to_check = get_all_tiles_in_aabb(aabb, tiles);
+    tiles_to_check.push((graphics::Tile::NoTile, 0, 0));
+
     let mut last_area: f32 = 0.0;
-    let tiles_to_check = get_all_tiles_in_aabb(aabb, tiles);
+    let mut run_info: Option<(usize, usize, usize, usize)> = None;
+
     for (tile_id, ux, uy) in tiles_to_check {
-        if tile_id == graphics::Tile::NoTile {
-            continue;
-        }
-        let (correction, area) = correct_collision(
-            aabb,
-            &mut AABB {
-                x: (ux * graphics::TILE_SIZE + graphics::TILE_SIZE / 2) as f32,
-                y: (uy * graphics::TILE_SIZE + graphics::TILE_SIZE / 2) as f32,
-                w: graphics::TILE_SIZE as f32,
-                h: graphics::TILE_SIZE as f32,
-                last: Correction::None,
-            },
-        );
-        if correction != Correction::None && area > last_area {
-            aabb.last = correction;
-            last_area = area;
+        match run_info {
+            None => {
+                if tile_id != graphics::Tile::NoTile {
+                    run_info = Some((ux, uy, ux, uy));
+                } else {
+                    run_info = None;
+                }
+            }
+            Some((sx, sy, ex, ey)) => {
+                if tile_id != graphics::Tile::NoTile && ux == sx {
+                    run_info = Some((sx, sy, ux, uy));
+                } else {
+                    let (correction, area) = correct_collision(
+                        aabb,
+                        &mut AABB {
+                            x: ((ex + sx) as f32 * graphics::TILE_SIZE as f32
+                                + graphics::TILE_SIZE as f32)
+                                / 2.0,
+                            y: ((ey + sy) as f32 * graphics::TILE_SIZE as f32
+                                + graphics::TILE_SIZE as f32)
+                                / 2.0,
+                            w: graphics::TILE_SIZE as f32,
+                            h: ((ey - sy + 1) * graphics::TILE_SIZE) as f32,
+                            last: Correction::None,
+                        },
+                    );
+                    if correction != Correction::None && area > last_area {
+                        aabb.last = correction;
+                        last_area = area;
+                    }
+                    if tile_id != graphics::Tile::NoTile {
+                        run_info = Some((ux, uy, ux, uy));
+                    } else {
+                        run_info = None;
+                    }
+                }
+            }
         }
     }
     match aabb.last {
