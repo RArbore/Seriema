@@ -1,0 +1,10 @@
+[package]
+name = "editor"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+pollster = "0.2.5"
+
+[dependencies.graphics]
+path = "../graphics"

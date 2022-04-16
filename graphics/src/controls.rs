@@ -29,10 +29,10 @@ pub enum ControllerScheme {
 }
 
 pub struct Controller {
-    pressed: [bool; NUM_KEYCODES],
-    cursor_x: f64,
-    cursor_y: f64,
-    scheme: ControllerScheme,
+    pub pressed: [bool; NUM_KEYCODES],
+    pub cursor_x: f64,
+    pub cursor_y: f64,
+    pub scheme: ControllerScheme,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -95,16 +95,16 @@ impl Controller {
                 left_key,
                 right_key,
             } => {
-                let world_x = (self.cursor_x as f32 / PIXEL_SIZE as f32) + cx - ax;
-                let world_y = (self.cursor_y as f32 / PIXEL_SIZE as f32) + cy - ay;
-                let magnitude = (world_x * world_x + world_y * world_y).sqrt();
+                let world_dx = (self.cursor_x as f32 / PIXEL_SIZE as f32) + cx - ax;
+                let world_dy = (self.cursor_y as f32 / PIXEL_SIZE as f32) + cy - ay;
+                let magnitude = (world_dx * world_dx + world_dy * world_dy).sqrt();
                 GameInput {
                     jump: self.pressed[jump_key as usize],
                     crouch: self.pressed[crouch_key as usize],
                     left: self.pressed[left_key as usize],
                     right: self.pressed[right_key as usize],
-                    n_cursor_x: world_x / magnitude,
-                    n_cursor_y: -world_y / magnitude,
+                    n_cursor_x: world_dx / magnitude,
+                    n_cursor_y: -world_dy / magnitude,
                 }
             }
         }

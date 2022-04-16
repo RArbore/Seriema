@@ -27,6 +27,12 @@ pub enum Tile {
     NoTile,
 }
 
+impl Default for Tile {
+    fn default() -> Self {
+        Tile::NoTile
+    }
+}
+
 pub type Tiles = HashMap<(usize, usize), [[(Tile, usize); CHUNK_SIZE]; CHUNK_SIZE]>;
 
 pub type TileBatch = [Vec<(usize, usize, usize)>; NUM_TILES];
