@@ -32,6 +32,9 @@ pub struct Controller {
     pub pressed: [bool; NUM_KEYCODES],
     pub cursor_x: f64,
     pub cursor_y: f64,
+    pub left_click: bool,
+    pub right_click: bool,
+    pub middle_click: bool,
     pub scheme: ControllerScheme,
 }
 
@@ -51,6 +54,9 @@ impl Controller {
             pressed: [false; NUM_KEYCODES],
             cursor_x: 0.0,
             cursor_y: 0.0,
+            left_click: false,
+            right_click: false,
+            middle_click: false,
             scheme,
         }
     }
@@ -81,6 +87,24 @@ impl Controller {
             ) => {
                 self.cursor_x = *x - size.width as f64 / 2.0;
                 self.cursor_y = *y - size.height as f64 / 2.0;
+                true
+            }
+            (
+                WindowEvent::MouseInput { state, button, .. },
+                ControllerScheme::KeyboardMouse { .. },
+            ) => {
+                match button {
+                    MouseButton::Left => {
+                        self.left_click = *state == ElementState::Pressed;
+                    }
+                    MouseButton::Right => {
+                        self.right_click = *state == ElementState::Pressed;
+                    }
+                    MouseButton::Middle => {
+                        self.middle_click = *state == ElementState::Pressed;
+                    }
+                    _ => {}
+                };
                 true
             }
             _ => false,

@@ -21,27 +21,30 @@ fn main() {
     let cx = 0.0;
     let cy = 0.0;
     pollster::block_on(graphics::Graphics::new()).run(move |controller, _, _, _, _| {
-        let world_x = (controller.cursor_x as f32 / graphics::PIXEL_SIZE as f32) + cx;
-        let world_y = -(controller.cursor_y as f32 / graphics::PIXEL_SIZE as f32) + cy;
-        let tile_x = (world_x as i64 / graphics::TILE_SIZE as i64 - (world_x < 0.0) as i64 + OFFSET)
-            as usize;
-        let tile_y = (world_y as i64 / graphics::TILE_SIZE as i64 - (world_y < 0.0) as i64 + OFFSET)
-            as usize;
-        let chunk = tiles.get_mut(&(tile_x / graphics::CHUNK_SIZE, tile_y / graphics::CHUNK_SIZE));
-        match chunk {
-            Some(arr) => {
-                arr[tile_x % graphics::CHUNK_SIZE][tile_y % graphics::CHUNK_SIZE] =
-                    (graphics::Tile::TestTile1, 0);
-            }
-            None => {
-                let mut new_chunk: [[(graphics::Tile, usize); graphics::CHUNK_SIZE];
-                    graphics::CHUNK_SIZE] = Default::default();
-                new_chunk[tile_x % graphics::CHUNK_SIZE][tile_y % graphics::CHUNK_SIZE] =
-                    (graphics::Tile::TestTile1, 0);
-                tiles.insert(
-                    (tile_x / graphics::CHUNK_SIZE, tile_y / graphics::CHUNK_SIZE),
-                    new_chunk,
-                );
+        if controller.left_click {
+            let world_x = (controller.cursor_x as f32 / graphics::PIXEL_SIZE as f32) + cx;
+            let world_y = -(controller.cursor_y as f32 / graphics::PIXEL_SIZE as f32) + cy;
+            let tile_x = (world_x as i64 / graphics::TILE_SIZE as i64 - (world_x < 0.0) as i64
+                + OFFSET) as usize;
+            let tile_y = (world_y as i64 / graphics::TILE_SIZE as i64 - (world_y < 0.0) as i64
+                + OFFSET) as usize;
+            let chunk =
+                tiles.get_mut(&(tile_x / graphics::CHUNK_SIZE, tile_y / graphics::CHUNK_SIZE));
+            match chunk {
+                Some(arr) => {
+                    arr[tile_x % graphics::CHUNK_SIZE][tile_y % graphics::CHUNK_SIZE] =
+                        (graphics::Tile::TestTile1, 0);
+                }
+                None => {
+                    let mut new_chunk: [[(graphics::Tile, usize); graphics::CHUNK_SIZE];
+                        graphics::CHUNK_SIZE] = Default::default();
+                    new_chunk[tile_x % graphics::CHUNK_SIZE][tile_y % graphics::CHUNK_SIZE] =
+                        (graphics::Tile::TestTile1, 0);
+                    tiles.insert(
+                        (tile_x / graphics::CHUNK_SIZE, tile_y / graphics::CHUNK_SIZE),
+                        new_chunk,
+                    );
+                }
             }
         }
 
