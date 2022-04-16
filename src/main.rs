@@ -45,17 +45,17 @@ fn main() {
     world.insert(
         entity,
         ecs::AABB {
-            x: 16.0,
-            y: 16.0,
+            x: 32.0,
+            y: 32.0,
             w: 16.0,
             h: 16.0,
         },
     );
-    world.insert(entity, ecs::Velocity { x: 1.0, y: 0.0 });
+    world.insert(entity, ecs::Velocity { x: 0.0, y: 0.0 });
     world.insert(
         entity,
         ecs::Sprite {
-            sprite: graphics::sprite::Sprite::TestSprite2,
+            sprite: graphics::sprite::Sprite::TestSprite1,
             frame: 0,
             width: 1.0,
             height: 1.0,
@@ -91,10 +91,10 @@ fn main() {
         [[(graphics::tiles::Tile::NoTile, 0); graphics::tiles::CHUNK_SIZE];
             graphics::tiles::CHUNK_SIZE],
     );
-    world.resources.tiles.get_mut(&(0, 0)).unwrap()[0][0] =
-        (graphics::tiles::Tile::TestTile1, 0x04);
-    world.resources.tiles.get_mut(&(0, 0)).unwrap()[0][1] =
-        (graphics::tiles::Tile::TestTile1, 0x40);
+    for i in 0..16 {
+        world.resources.tiles.get_mut(&(0, 0)).unwrap()[i][0] =
+            (graphics::tiles::Tile::TestTile1, 0xFF);
+    }
 
     pollster::block_on(graphics::Graphics::new()).run(move |controller, p_cx, p_cy, p_ax, p_ay| {
         world.run(controller.get_game_input(p_cx, p_cy, p_ax, p_ay))

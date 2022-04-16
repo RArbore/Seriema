@@ -121,21 +121,30 @@ system_impl!(
     B,
     C,
     (timer, Timer),
-    (user_input, graphics::GameInput),
+    (game_input, graphics::GameInput),
     (camera, (f32, f32)),
     (control_point, (f32, f32))
 );
 pub fn player_system(
     timer: &mut Timer,
-    user_input: &mut graphics::GameInput,
+    game_input: &mut graphics::GameInput,
     camera: &mut (f32, f32),
     control_point: &mut (f32, f32),
     aabb: &mut AABB,
     vel: &mut Velocity,
     _player: &mut Player,
 ) {
-    vel.x += user_input.n_cursor_x * 100.0 * timer.dt();
-    vel.y += user_input.n_cursor_y * 100.0 * timer.dt();
+    vel.y -= (if game_input.crouch { 400.0 } else { 200.0 }) * timer.dt();
+    vel.x = 0.0;
+    if game_input.left {
+        vel.x += -100.0;
+    }
+    if game_input.right {
+        vel.x += 100.0;
+    }
+    if game_input.jump {
+        vel.y = 100.0;
+    }
     camera.0 = aabb.x;
     camera.1 = aabb.y;
     control_point.0 = aabb.x;

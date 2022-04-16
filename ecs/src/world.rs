@@ -35,7 +35,7 @@ pub struct Components {
 pub struct Resources {
     pub timer: Timer,
     pub sprite_batch_res: SpriteBatchRes,
-    pub user_input: graphics::GameInput,
+    pub game_input: graphics::GameInput,
     pub camera: (f32, f32),
     pub control_point: (f32, f32),
     pub tiles: graphics::Tiles,
@@ -62,7 +62,7 @@ impl World {
             resources: Resources {
                 timer: Timer::new(),
                 sprite_batch_res: SpriteBatchRes::new(0 as *mut graphics::SpriteBatch),
-                user_input: graphics::GameInput::new(),
+                game_input: graphics::GameInput::new(),
                 camera: (0.0, 0.0),
                 control_point: (0.0, 0.0),
                 tiles: HashMap::new(),
@@ -99,7 +99,7 @@ impl World {
         self.resources.timer.update_dt();
         let mut sprite_batch: graphics::SpriteBatch = vec![vec![]; graphics::NUM_SPRITES];
         self.resources.sprite_batch_res = SpriteBatchRes::new(&mut sprite_batch);
-        self.resources.user_input = input;
+        self.resources.game_input = input;
 
         for system in self.systems.iter_mut() {
             for entity in 0..self.size {
