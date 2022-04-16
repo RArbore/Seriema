@@ -117,11 +117,10 @@ fn concat4(quads: [DynamicImage; 4]) -> DynamicImage {
 fn main() {
     let args: Vec<String> = args().collect();
     for arg in args[1..].iter() {
-        assert_ne!(arg, &arg.replace("assets/", "assets/gen/"));
-        let img = Reader::open(arg)
+        let img = Reader::open(String::from("assets/") + arg)
             .expect(&format!("Couldn't open file: {}.", arg)[..])
             .decode()
-            .expect(&format!("File couldn't be coded: {}.", arg)[..]);
+            .expect(&format!("File couldn't be decoded: {}.", arg)[..]);
         let mut tileset = RgbaImage::new(256 * 16, 16);
         for i in 0u8..=255u8 {
             let edges = num_to_edges(i);
@@ -137,6 +136,6 @@ fn main() {
             ]);
             _ = tileset.copy_from(&constructed, i as u32 * 16, 0);
         }
-        _ = tileset.save(arg.replace("assets/", "assets/gen/"));
+        _ = tileset.save(String::from("assets/gen/") + arg);
     }
 }
