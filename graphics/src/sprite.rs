@@ -35,7 +35,7 @@ impl Sprite {
     }
 }
 
-pub type SpriteBatch = [Vec<(usize, f32, f32, f32, f32)>; NUM_SPRITES];
+pub type SpriteBatch = [Vec<(usize, f32, f32, f32, f32)>; NUM_SPRITE_];
 
 #[repr(C)]
 #[derive(Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]

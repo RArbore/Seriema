@@ -14,7 +14,7 @@
 
 extern crate graphics;
 
-const OFFSET: usize = 10000 * graphics::CHUNK_SIZE;
+const OFFSET: i64 = 10000 * graphics::CHUNK_SIZE as i64;
 
 fn main() {
     let mut tiles: graphics::Tiles = Default::default();
@@ -23,10 +23,10 @@ fn main() {
     pollster::block_on(graphics::Graphics::new()).run(move |controller, _, _, _, _| {
         let world_x = (controller.cursor_x as f32 / graphics::PIXEL_SIZE as f32) + cx;
         let world_y = -(controller.cursor_y as f32 / graphics::PIXEL_SIZE as f32) + cy;
-        let tile_x = (world_x as i64 / graphics::TILE_SIZE as i64 - (world_x < 0.0) as i64
-            + OFFSET as i64) as usize;
-        let tile_y = (world_y as i64 / graphics::TILE_SIZE as i64 - (world_x < 0.0) as i64
-            + OFFSET as i64) as usize;
+        let tile_x = (world_x as i64 / graphics::TILE_SIZE as i64 - (world_x < 0.0) as i64 + OFFSET)
+            as usize;
+        let tile_y = (world_y as i64 / graphics::TILE_SIZE as i64 - (world_y < 0.0) as i64 + OFFSET)
+            as usize;
         let chunk = tiles.get_mut(&(tile_x / graphics::CHUNK_SIZE, tile_y / graphics::CHUNK_SIZE));
         match chunk {
             Some(arr) => {
@@ -63,8 +63,8 @@ fn main() {
         (
             Default::default(),
             tile_batch,
-            cx + OFFSET as f32,
-            cy + OFFSET as f32,
+            cx + (OFFSET * graphics::TILE_SIZE as i64) as f32,
+            cy + (OFFSET * graphics::TILE_SIZE as i64) as f32,
             0.0,
             0.0,
         )

@@ -404,8 +404,8 @@ impl Context {
                             / Sprite::frames(i) as f32
                             * *w,
                         h: (self.textures[i + 1].dimensions.1 as usize * PIXEL_SIZE) as f32 * *h,
-                        ww: self.size.width as f32,
-                        wh: self.size.height as f32,
+                        ww: self.size.width as f32 / 2.0,
+                        wh: self.size.height as f32 / 2.0,
                     })
                     .collect();
                 self.queue.write_buffer(
@@ -432,8 +432,8 @@ impl Context {
                         w: (self.textures[0].dimensions.0 as usize * PIXEL_SIZE) as f32
                             / NUM_TILE_VERSIONS as f32,
                         h: (self.textures[0].dimensions.1 as usize * PIXEL_SIZE) as f32,
-                        ww: self.size.width as f32,
-                        wh: self.size.height as f32,
+                        ww: self.size.width as f32 / 2.0,
+                        wh: self.size.height as f32 / 2.0,
                     })
                     .collect();
                 self.queue.write_buffer(
