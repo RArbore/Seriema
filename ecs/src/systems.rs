@@ -153,6 +153,7 @@ system_impl!(
     A,
     B,
     C,
+    D,
     (timer, Timer),
     (game_input, graphics::GameInput),
     (camera, (f32, f32)),
@@ -165,6 +166,7 @@ pub fn player_system(
     control_point: &mut (f32, f32),
     aabb: &mut AABB,
     vel: &mut Velocity,
+    sprite: &mut Sprite,
     player: &mut Player,
 ) {
     if aabb.last == Correction::Up {
@@ -185,6 +187,11 @@ pub fn player_system(
     if game_input.jump && player.can_jump > 0.0 {
         vel.y = 100.0;
         player.can_jump = 0.0;
+    }
+    if player.can_jump > 0.0 {
+        sprite.frame = 0;
+    } else {
+        sprite.frame = 1;
     }
     camera.0 = aabb.x;
     camera.1 = aabb.y;

@@ -83,6 +83,7 @@ fn main() {
                 &mut (f32, f32),
                 &mut ecs::AABB,
                 &mut ecs::Velocity,
+                &mut ecs::Sprite,
                 &mut ecs::Player,
             ),
     ));
