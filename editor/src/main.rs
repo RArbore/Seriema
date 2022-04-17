@@ -14,7 +14,7 @@
 
 extern crate graphics;
 
-const OFFSET: i64 = 10000 * graphics::CHUNK_SIZE as i64;
+const OFFSET: i64 = 100000 * graphics::CHUNK_SIZE as i64;
 
 const EDGE_OFFSETS: [(usize, usize); 8] = [
     (0, 1),
@@ -50,15 +50,18 @@ fn calculate_tile_edges(tile_x: usize, tile_y: usize, tiles: &graphics::Tiles) -
 
 fn main() {
     let mut tiles: graphics::Tiles = Default::default();
-    let cx = 0.0;
-    let cy = 0.0;
+    let mut cx = 0.0;
+    let mut cy = 0.0;
+    let mut dc: Option<(f32, f32)> = None;
     pollster::block_on(graphics::Graphics::new()).run(move |controller, _, _, _, _| {
         if controller.left_click {
             let world_x = (controller.cursor_x as f32 / graphics::PIXEL_SIZE as f32) + cx;
             let world_y = -(controller.cursor_y as f32 / graphics::PIXEL_SIZE as f32) + cy;
-            let tile_x = (world_x as i64 / graphics::TILE_SIZE as i64 - (world_x < 0.0) as i64
+            let tile_x = (world_x as i64 / graphics::TILE_SIZE as i64
+                - (if world_x < 0.0 { 1 } else { 0 })
                 + OFFSET) as usize;
-            let tile_y = (world_y as i64 / graphics::TILE_SIZE as i64 - (world_y < 0.0) as i64
+            let tile_y = (world_y as i64 / graphics::TILE_SIZE as i64
+                - (if world_y < 0.0 { 1 } else { 0 })
                 + OFFSET) as usize;
             let chunk =
                 tiles.get_mut(&(tile_x / graphics::CHUNK_SIZE, tile_y / graphics::CHUNK_SIZE));
@@ -94,6 +97,28 @@ fn main() {
                     }
                 }
             }
+        }
+
+        if controller.middle_click {
+            if let Some((dcx, dcy)) = dc {
+                let (ncx, ncy) = (
+                    controller.cursor_x as f32 / graphics::PIXEL_SIZE as f32,
+                    -controller.cursor_y as f32 / graphics::PIXEL_SIZE as f32,
+                );
+                cx -= ncx - dcx;
+                cy -= ncy - dcy;
+                dc = Some((
+                    controller.cursor_x as f32 / graphics::PIXEL_SIZE as f32,
+                    -controller.cursor_y as f32 / graphics::PIXEL_SIZE as f32,
+                ));
+            } else {
+                dc = Some((
+                    controller.cursor_x as f32 / graphics::PIXEL_SIZE as f32,
+                    -controller.cursor_y as f32 / graphics::PIXEL_SIZE as f32,
+                ));
+            }
+        } else {
+            dc = None;
         }
 
         let mut tile_batch: graphics::TileBatch = Default::default();
