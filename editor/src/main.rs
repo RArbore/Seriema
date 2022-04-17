@@ -16,6 +16,38 @@ extern crate graphics;
 
 const OFFSET: i64 = 10000 * graphics::CHUNK_SIZE as i64;
 
+const EDGE_OFFSETS: [(usize, usize); 8] = [
+    (0, 1),
+    (0, 2),
+    (1, 2),
+    (2, 2),
+    (2, 1),
+    (2, 0),
+    (1, 0),
+    (0, 0),
+];
+
+fn calculate_tile_edges(tile_x: usize, tile_y: usize, tiles: &graphics::Tiles) -> u8 {
+    let chunk = tiles.get(&(tile_x / graphics::CHUNK_SIZE, tile_y / graphics::CHUNK_SIZE));
+    let tile = match chunk {
+        Some(arr) => arr[tile_x % graphics::CHUNK_SIZE][tile_y % graphics::CHUNK_SIZE].0,
+        None => graphics::Tile::NoTile,
+    };
+
+    let mut acc: u8 = 0;
+    for i in 0..8 {
+        let (o_x, o_y) = EDGE_OFFSETS[i];
+        let (o_x, o_y) = (o_x + tile_x - 1, o_y + tile_y - 1);
+        let chunk = tiles.get(&(o_x / graphics::CHUNK_SIZE, o_y / graphics::CHUNK_SIZE));
+        let o_tile = match chunk {
+            Some(arr) => arr[o_x % graphics::CHUNK_SIZE][o_y % graphics::CHUNK_SIZE].0,
+            None => graphics::Tile::NoTile,
+        };
+        acc |= ((o_tile == tile) as u8) << i;
+    }
+    acc
+}
+
 fn main() {
     let mut tiles: graphics::Tiles = Default::default();
     let cx = 0.0;
@@ -30,6 +62,7 @@ fn main() {
                 + OFFSET) as usize;
             let chunk =
                 tiles.get_mut(&(tile_x / graphics::CHUNK_SIZE, tile_y / graphics::CHUNK_SIZE));
+
             match chunk {
                 Some(arr) => {
                     arr[tile_x % graphics::CHUNK_SIZE][tile_y % graphics::CHUNK_SIZE] =
@@ -44,6 +77,21 @@ fn main() {
                         (tile_x / graphics::CHUNK_SIZE, tile_y / graphics::CHUNK_SIZE),
                         new_chunk,
                     );
+                }
+            }
+
+            for x in 0usize..3 {
+                for y in 0usize..3 {
+                    let (o_x, o_y) = (tile_x + x - 1, tile_y + y - 1);
+                    let frame = calculate_tile_edges(o_x, o_y, &tiles) as usize;
+                    let chunk =
+                        tiles.get_mut(&(o_x / graphics::CHUNK_SIZE, o_y / graphics::CHUNK_SIZE));
+                    if let Some(arr) = chunk {
+                        arr[o_x % graphics::CHUNK_SIZE][o_y % graphics::CHUNK_SIZE] =
+                            (|(t, _)| (t, frame))(
+                                arr[o_x % graphics::CHUNK_SIZE][o_y % graphics::CHUNK_SIZE],
+                            );
+                    }
                 }
             }
         }
