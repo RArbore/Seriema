@@ -12,6 +12,9 @@
  * along with game-testbed. If not, see <https://www.gnu.org/licenses/>.
  */
 
+use std::fs::File;
+use std::io::prelude::*;
+
 extern crate graphics;
 
 const OFFSET: i64 = 100000 * graphics::CHUNK_SIZE as i64;
@@ -46,6 +49,13 @@ fn calculate_tile_edges(tile_x: usize, tile_y: usize, tiles: &graphics::Tiles) -
         acc |= ((o_tile == tile) as u8) << i;
     }
     acc
+}
+
+fn save_tiles(tiles: &graphics::Tiles, file_path: &str) -> std::io::Result<()> {
+    let serialized = serde_json::to_string(tiles)?;
+    let mut file = File::create(file_path)?;
+    file.write(serialized.as_bytes())?;
+    Ok(())
 }
 
 fn main() {

@@ -12,6 +12,9 @@ log = "0.4.16"
 
 bytemuck = { version = "1.9.1", features = [ "derive" ] }
 
+serde = { version = "1.0.136", features = ["derive"] }
+serde_json = "1.0.79"
+
 [dependencies.image]
 version = "0.24.1"
 default-features = false
