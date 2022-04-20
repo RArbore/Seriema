@@ -19,7 +19,7 @@ use std::sync::mpsc;
 use std::sync::mpsc::{Receiver, Sender};
 use std::thread;
 
-use druid::widget::Label;
+use druid::widget::*;
 use druid::*;
 
 extern crate graphics;
@@ -66,7 +66,20 @@ fn save_tiles(tiles: &graphics::Tiles, file_path: &str) -> std::io::Result<()> {
 }
 
 fn build_ui() -> impl Widget<()> {
-    Label::new("!!!")
+    let json_spec = FileSpec::new("JSON file", &["json"]);
+    let save_dialog_options = FileDialogOptions::new()
+        .allowed_types(vec![json_spec])
+        .default_type(json_spec);
+    Padding::new(
+        10.0,
+        Button::new("Save").on_click(move |ctx, _, _| {
+            ctx.submit_command(Command::new(
+                commands::SHOW_SAVE_PANEL,
+                save_dialog_options.clone(),
+                Target::Auto,
+            ))
+        }),
+    )
 }
 
 fn main() {
