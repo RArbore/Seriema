@@ -17,6 +17,7 @@ use std::io::prelude::*;
 use std::process;
 use std::sync::mpsc;
 use std::sync::mpsc::{Receiver, Sender};
+use std::sync::{Arc, Mutex};
 use std::thread;
 
 use druid::widget::*;
@@ -59,17 +60,17 @@ fn calculate_tile_edges(tile_x: usize, tile_y: usize, tiles: &graphics::Tiles) -
 }
 
 fn save_tiles(tiles: &graphics::Tiles, file_path: &str) -> std::io::Result<()> {
-    let serialized = serde_json::to_string(tiles)?;
+    let serialized = bincode::serialize(tiles).unwrap();
     let mut file = File::create(file_path)?;
-    file.write(serialized.as_bytes())?;
+    file.write(&serialized)?;
     Ok(())
 }
 
 fn build_ui() -> impl Widget<()> {
-    let json_spec = FileSpec::new("JSON file", &["json"]);
+    let bin_spec = FileSpec::new("BIN file", &["bin"]);
     let save_dialog_options = FileDialogOptions::new()
-        .allowed_types(vec![json_spec])
-        .default_type(json_spec);
+        .allowed_types(vec![bin_spec])
+        .default_type(bin_spec);
     Padding::new(
         10.0,
         Button::new("Save").on_click(move |ctx, _, _| {
@@ -82,7 +83,37 @@ fn build_ui() -> impl Widget<()> {
     )
 }
 
+struct Delegate {
+    scene: Arc<Mutex<graphics::Tiles>>,
+}
+
+impl AppDelegate<()> for Delegate {
+    fn command(
+        &mut self,
+        _ctx: &mut DelegateCtx,
+        _target: Target,
+        cmd: &Command,
+        _data: &mut (),
+        _env: &Env,
+    ) -> Handled {
+        if let Some(file_info) = cmd.get(commands::SAVE_FILE_AS) {
+            if let Err(e) = save_tiles(
+                &self.scene.lock().unwrap(),
+                file_info.path().to_str().unwrap(),
+            ) {
+                println!("Error writing file: {}", e);
+            }
+            Handled::Yes
+        } else {
+            Handled::No
+        }
+    }
+}
+
 fn main() {
+    let scene: Arc<Mutex<graphics::Tiles>> = Default::default();
+    let scene_clone = Arc::clone(&scene);
+
     let (tx, rx): (Sender<()>, Receiver<()>) = mpsc::channel();
     thread::spawn(move || {
         AppLauncher::with_window(
@@ -91,12 +122,12 @@ fn main() {
                 .resizable(false)
                 .title("Editor Tools"),
         )
+        .delegate(Delegate { scene: scene_clone })
         .launch(())
         .expect("Failed to editor tools window.");
         tx.send(()).unwrap();
     });
 
-    let mut tiles: graphics::Tiles = Default::default();
     let mut cx = 0.0;
     let mut cy = 0.0;
     let mut dc: Option<(f32, f32)> = None;
@@ -104,6 +135,8 @@ fn main() {
         if let Ok(()) = rx.try_recv() {
             process::exit(0);
         }
+
+        let tiles: &mut graphics::Tiles = &mut scene.lock().unwrap();
 
         if controller.left_click {
             let world_x = (controller.cursor_x as f32 / graphics::PIXEL_SIZE as f32) + cx;
