@@ -88,19 +88,8 @@ fn main() {
             ),
     ));
 
-    world.resources.tiles.insert(
-        (0, 0),
-        [[(graphics::tiles::Tile::NoTile, 0); graphics::tiles::CHUNK_SIZE];
-            graphics::tiles::CHUNK_SIZE],
-    );
-    for i in 0..16 {
-        world.resources.tiles.get_mut(&(0, 0)).unwrap()[i][0] =
-            (graphics::tiles::Tile::TestTile1, 0xFF);
-        world.resources.tiles.get_mut(&(0, 0)).unwrap()[0][i] =
-            (graphics::tiles::Tile::TestTile1, 0xFF);
-        world.resources.tiles.get_mut(&(0, 0)).unwrap()[15][i] =
-            (graphics::tiles::Tile::TestTile1, 0xFF);
-    }
+    world.resources.tiles =
+        bincode::deserialize(&std::fs::read("assets/testscene.bin").unwrap()).unwrap();
 
     pollster::block_on(graphics::Graphics::new()).run(move |controller, p_cx, p_cy, p_ax, p_ay| {
         world.run(controller.get_game_input(p_cx, p_cy, p_ax, p_ay))

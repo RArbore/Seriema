@@ -60,7 +60,20 @@ fn calculate_tile_edges(tile_x: usize, tile_y: usize, tiles: &graphics::Tiles) -
 }
 
 fn save_tiles(tiles: &graphics::Tiles, file_path: &str) -> std::io::Result<()> {
-    let serialized = bincode::serialize(tiles).unwrap();
+    let mut min: (usize, usize) = (usize::MAX, usize::MAX);
+    for (key, _) in tiles {
+        if key.0 < min.0 {
+            min.0 = key.0;
+        }
+        if key.1 < min.1 {
+            min.1 = key.1;
+        }
+    }
+    let mut adjusted_tiles: graphics::Tiles = Default::default();
+    for (key, value) in tiles {
+        adjusted_tiles.insert((key.0 - min.0, key.1 - min.1), value.clone());
+    }
+    let serialized = bincode::serialize(&adjusted_tiles).unwrap();
     let mut file = File::create(file_path)?;
     file.write(&serialized)?;
     Ok(())
