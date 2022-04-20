@@ -14,6 +14,10 @@
 
 use std::fs::File;
 use std::io::prelude::*;
+use std::thread;
+
+use druid::widget::Label;
+use druid::*;
 
 extern crate graphics;
 
@@ -59,6 +63,15 @@ fn save_tiles(tiles: &graphics::Tiles, file_path: &str) -> std::io::Result<()> {
 }
 
 fn main() {
+    thread::spawn(|| {
+        _ = AppLauncher::with_window(
+            WindowDesc::new(|| Label::new("Hello world"))
+                .window_size((400.0, 300.0))
+                .resizable(false),
+        )
+        .launch(());
+    });
+
     let mut tiles: graphics::Tiles = Default::default();
     let mut cx = 0.0;
     let mut cy = 0.0;
