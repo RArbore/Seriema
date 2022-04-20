@@ -14,6 +14,9 @@
 
 use std::fs::File;
 use std::io::prelude::*;
+use std::process;
+use std::sync::mpsc;
+use std::sync::mpsc::{Receiver, Sender};
 use std::thread;
 
 use druid::widget::Label;
@@ -62,14 +65,22 @@ fn save_tiles(tiles: &graphics::Tiles, file_path: &str) -> std::io::Result<()> {
     Ok(())
 }
 
+fn build_ui() -> impl Widget<()> {
+    Label::new("!!!")
+}
+
 fn main() {
-    thread::spawn(|| {
-        _ = AppLauncher::with_window(
-            WindowDesc::new(|| Label::new("Hello world"))
-                .window_size((400.0, 300.0))
-                .resizable(false),
+    let (tx, rx): (Sender<()>, Receiver<()>) = mpsc::channel();
+    thread::spawn(move || {
+        AppLauncher::with_window(
+            WindowDesc::new(build_ui)
+                .window_size((400.0, 400.0))
+                .resizable(false)
+                .title("Editor Tools"),
         )
-        .launch(());
+        .launch(())
+        .expect("Failed to editor tools window.");
+        tx.send(()).unwrap();
     });
 
     let mut tiles: graphics::Tiles = Default::default();
@@ -77,6 +88,10 @@ fn main() {
     let mut cy = 0.0;
     let mut dc: Option<(f32, f32)> = None;
     pollster::block_on(graphics::Graphics::new()).run(move |controller, _, _, _, _| {
+        if let Ok(()) = rx.try_recv() {
+            process::exit(0);
+        }
+
         if controller.left_click {
             let world_x = (controller.cursor_x as f32 / graphics::PIXEL_SIZE as f32) + cx;
             let world_y = -(controller.cursor_y as f32 / graphics::PIXEL_SIZE as f32) + cy;

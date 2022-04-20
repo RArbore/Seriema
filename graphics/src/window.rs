@@ -58,6 +58,7 @@ impl Graphics {
             right_key: VirtualKeyCode::D,
         });
         let window = WindowBuilder::new()
+            .with_title("game-testbed")
             .build(&event_loop)
             .expect("Could not create a window.");
         let context = Context::new(&window).await;
