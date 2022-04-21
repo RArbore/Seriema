@@ -96,12 +96,14 @@ fn num_to_edges(n: u8) -> [QuadEdgeType; 4] {
 }
 
 fn quad_to_coord(quad_num: u32, quad_type: QuadEdgeType) -> (u32, u32) {
+    let x = 8 * (quad_num % 2);
+    let y = 8 * (quad_num / 2);
     match quad_type {
-        QuadEdgeType::Clean => (16, 16),
-        QuadEdgeType::Diag => (8 * (quad_num % 2), 8 * (quad_num / 2)),
-        QuadEdgeType::Horiz => (8 * (quad_num % 2) + 16, 0),
-        QuadEdgeType::Vert => (8 * (quad_num / 2) + 16, 8),
-        QuadEdgeType::Full => (8 * (quad_num % 2), 8 * (quad_num / 2) + 16),
+        QuadEdgeType::Clean => (x, y),
+        QuadEdgeType::Diag => (x + 16, y),
+        QuadEdgeType::Horiz => (x + 32, y),
+        QuadEdgeType::Vert => (x + 48, y),
+        QuadEdgeType::Full => (x + 64, y),
     }
 }
 
