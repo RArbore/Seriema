@@ -79,12 +79,49 @@ fn save_tiles(tiles: &graphics::Tiles, file_path: &str) -> std::io::Result<()> {
     Ok(())
 }
 
+macro_rules! create_images {
+    ($($x:literal),+) => {
+        [
+            $(
+                ImageBuf::from_raw(
+                    image::load_from_memory(&include_bytes!($x)[..])
+                        .unwrap()
+                        .crop_imm(
+                            4 * graphics::TILE_SIZE as u32,
+                            0,
+                            graphics::TILE_SIZE as u32,
+                            graphics::TILE_SIZE as u32,
+                        )
+                        .as_bytes(),
+                    piet::ImageFormat::RgbaSeparate,
+                    graphics::TILE_SIZE,
+                    graphics::TILE_SIZE,
+                )
+            ),+
+        ]
+    };
+}
+
 fn build_ui() -> impl Widget<()> {
+    let png_data = create_images!(
+        "../../assets/test-tileset1.png",
+        "../../assets/test-tileset2.png"
+    );
+    let images = png_data.into_iter().map(|png| {
+        SizedBox::new(
+            Image::new(png)
+                .fill_mode(FillStrat::Contain)
+                .interpolation_mode(piet::InterpolationMode::NearestNeighbor),
+        )
+        .fix_width(32.0)
+        .fix_height(32.0)
+    });
+
     let bin_spec = FileSpec::new("BIN file", &["bin"]);
     let save_dialog_options = FileDialogOptions::new()
         .allowed_types(vec![bin_spec])
         .default_type(bin_spec);
-    Padding::new(
+    let mut top = Flex::column().with_child(Padding::new(
         10.0,
         Button::new("Save").on_click(move |ctx, _, _| {
             ctx.submit_command(Command::new(
@@ -93,7 +130,12 @@ fn build_ui() -> impl Widget<()> {
                 Target::Auto,
             ))
         }),
-    )
+    ));
+    for image in images {
+        top.add_default_spacer();
+        top.add_child(image);
+    }
+    top
 }
 
 struct Delegate {

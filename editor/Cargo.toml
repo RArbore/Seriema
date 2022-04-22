@@ -11,3 +11,8 @@ druid = "0.7.0"
 
 [dependencies.graphics]
 path = "../graphics"
+
+[dependencies.image]
+version = "0.24.1"
+default-features = false
+features = ["png"]
