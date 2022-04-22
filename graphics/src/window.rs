@@ -166,6 +166,7 @@ impl Context {
             &device,
             &queue,
             "../../assets/gen/test-tileset1.png",
+            "../../assets/gen/test-tileset2.png",
             "../../assets/gen/test-sprite1.png",
             "../../assets/gen/test-sprite2.png"
         );
@@ -401,10 +402,11 @@ impl Context {
                         texwidth: 1.0 / Sprite::frames(i) as f32,
                         x: *x * PIXEL_SIZE as f32,
                         y: *y * PIXEL_SIZE as f32,
-                        w: (self.textures[i + 1].dimensions.0 as usize * PIXEL_SIZE) as f32
+                        w: (self.textures[i + NUM_TILES].dimensions.0 as usize * PIXEL_SIZE) as f32
                             / Sprite::frames(i) as f32
                             * *w,
-                        h: (self.textures[i + 1].dimensions.1 as usize * PIXEL_SIZE) as f32 * *h,
+                        h: (self.textures[i + NUM_TILES].dimensions.1 as usize * PIXEL_SIZE) as f32
+                            * *h,
                         ww: self.size.width as f32 / 2.0,
                         wh: self.size.height as f32 / 2.0,
                     })

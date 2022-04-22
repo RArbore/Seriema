@@ -102,6 +102,11 @@ macro_rules! create_images {
     };
 }
 
+const SELECTIONS: [Selection; 2] = [
+    Selection::Tile(graphics::Tile::TestTile1),
+    Selection::Tile(graphics::Tile::TestTile2),
+];
+
 fn build_ui() -> impl Widget<()> {
     let png_data = create_images!(
         "../../assets/test-tileset1.png",
@@ -131,15 +136,27 @@ fn build_ui() -> impl Widget<()> {
             ))
         }),
     ));
+    let mut i = 0;
     for image in images {
         top.add_default_spacer();
-        top.add_child(image);
+        top.add_child(ControllerHost::new(
+            image,
+            Click::new(move |ctx, _, _| {
+                ctx.submit_command(Command::new(
+                    Selector::new("update_sel"),
+                    SELECTIONS[i],
+                    Target::Auto,
+                ))
+            }),
+        ));
+        i += 1;
     }
     top
 }
 
 struct Delegate {
     scene: Arc<Mutex<graphics::Tiles>>,
+    sel: Arc<Mutex<Selection>>,
 }
 
 impl AppDelegate<()> for Delegate {
@@ -159,12 +176,17 @@ impl AppDelegate<()> for Delegate {
                 println!("Error writing file: {}", e);
             }
             Handled::Yes
+        } else if let Some(selection) = cmd.get::<Selection>(Selector::new("update_sel")) {
+            let mut sel_ref = self.sel.lock().unwrap();
+            *sel_ref = *selection;
+            Handled::Yes
         } else {
             Handled::No
         }
     }
 }
 
+#[derive(Clone, Copy)]
 enum Selection {
     Tile(graphics::Tile),
 }
@@ -179,16 +201,20 @@ fn main() {
     let scene: Arc<Mutex<graphics::Tiles>> = Default::default();
     let cur_selection: Arc<Mutex<Selection>> = Default::default();
     let scene_clone = Arc::clone(&scene);
+    let cur_selection_clone = Arc::clone(&cur_selection);
 
     let (tx, rx): (Sender<()>, Receiver<()>) = mpsc::channel();
     thread::spawn(move || {
         AppLauncher::with_window(
-            WindowDesc::new(build_ui)
+            WindowDesc::new(|| build_ui())
                 .window_size((400.0, 400.0))
                 .resizable(false)
                 .title("Editor Tools"),
         )
-        .delegate(Delegate { scene: scene_clone })
+        .delegate(Delegate {
+            scene: scene_clone,
+            sel: cur_selection_clone,
+        })
         .launch(())
         .expect("Failed to editor tools window.");
         tx.send(()).unwrap();

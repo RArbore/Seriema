@@ -16,7 +16,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-pub const NUM_TILES: usize = 1;
+pub const NUM_TILES: usize = 2;
 pub const NUM_TILE_VERSIONS: usize = 256;
 pub const TILE_SIZE: usize = 16;
 pub const CHUNK_SIZE: usize = 16;
@@ -26,6 +26,7 @@ pub const PIXEL_SIZE: usize = 4;
 #[derive(PartialEq, Eq, Hash, Clone, Copy, Debug, Deserialize, Serialize)]
 pub enum Tile {
     TestTile1,
+    TestTile2,
     NoTile,
 }
 
