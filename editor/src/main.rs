@@ -123,8 +123,19 @@ impl AppDelegate<()> for Delegate {
     }
 }
 
+enum Selection {
+    Tile(graphics::Tile),
+}
+
+impl Default for Selection {
+    fn default() -> Self {
+        Selection::Tile(Default::default())
+    }
+}
+
 fn main() {
     let scene: Arc<Mutex<graphics::Tiles>> = Default::default();
+    let cur_selection: Arc<Mutex<Selection>> = Default::default();
     let scene_clone = Arc::clone(&scene);
 
     let (tx, rx): (Sender<()>, Receiver<()>) = mpsc::channel();
@@ -154,43 +165,48 @@ fn main() {
         if controller.left_click {
             let world_x = (controller.cursor_x as f32 / graphics::PIXEL_SIZE as f32) + cx;
             let world_y = -(controller.cursor_y as f32 / graphics::PIXEL_SIZE as f32) + cy;
-            let tile_x = (world_x as i64 / graphics::TILE_SIZE as i64
-                - (if world_x < 0.0 { 1 } else { 0 })
-                + OFFSET) as usize;
-            let tile_y = (world_y as i64 / graphics::TILE_SIZE as i64
-                - (if world_y < 0.0 { 1 } else { 0 })
-                + OFFSET) as usize;
-            let chunk =
-                tiles.get_mut(&(tile_x / graphics::CHUNK_SIZE, tile_y / graphics::CHUNK_SIZE));
+            let selection: &Selection = &cur_selection.lock().unwrap();
+            match selection {
+                Selection::Tile(tile) => {
+                    let tile_x = (world_x as i64 / graphics::TILE_SIZE as i64
+                        - (if world_x < 0.0 { 1 } else { 0 })
+                        + OFFSET) as usize;
+                    let tile_y = (world_y as i64 / graphics::TILE_SIZE as i64
+                        - (if world_y < 0.0 { 1 } else { 0 })
+                        + OFFSET) as usize;
+                    let chunk = tiles
+                        .get_mut(&(tile_x / graphics::CHUNK_SIZE, tile_y / graphics::CHUNK_SIZE));
 
-            match chunk {
-                Some(arr) => {
-                    arr[tile_x % graphics::CHUNK_SIZE][tile_y % graphics::CHUNK_SIZE] =
-                        (graphics::Tile::TestTile1, 0);
-                }
-                None => {
-                    let mut new_chunk: [[(graphics::Tile, usize); graphics::CHUNK_SIZE];
-                        graphics::CHUNK_SIZE] = Default::default();
-                    new_chunk[tile_x % graphics::CHUNK_SIZE][tile_y % graphics::CHUNK_SIZE] =
-                        (graphics::Tile::TestTile1, 0);
-                    tiles.insert(
-                        (tile_x / graphics::CHUNK_SIZE, tile_y / graphics::CHUNK_SIZE),
-                        new_chunk,
-                    );
-                }
-            }
-
-            for x in 0usize..3 {
-                for y in 0usize..3 {
-                    let (o_x, o_y) = (tile_x + x - 1, tile_y + y - 1);
-                    let frame = calculate_tile_edges(o_x, o_y, &tiles) as usize;
-                    let chunk =
-                        tiles.get_mut(&(o_x / graphics::CHUNK_SIZE, o_y / graphics::CHUNK_SIZE));
-                    if let Some(arr) = chunk {
-                        arr[o_x % graphics::CHUNK_SIZE][o_y % graphics::CHUNK_SIZE] =
-                            (|(t, _)| (t, frame))(
-                                arr[o_x % graphics::CHUNK_SIZE][o_y % graphics::CHUNK_SIZE],
+                    match chunk {
+                        Some(arr) => {
+                            arr[tile_x % graphics::CHUNK_SIZE][tile_y % graphics::CHUNK_SIZE] =
+                                (*tile, 0);
+                        }
+                        None => {
+                            let mut new_chunk: [[(graphics::Tile, usize); graphics::CHUNK_SIZE];
+                                graphics::CHUNK_SIZE] = Default::default();
+                            new_chunk[tile_x % graphics::CHUNK_SIZE]
+                                [tile_y % graphics::CHUNK_SIZE] = (*tile, 0);
+                            tiles.insert(
+                                (tile_x / graphics::CHUNK_SIZE, tile_y / graphics::CHUNK_SIZE),
+                                new_chunk,
                             );
+                        }
+                    }
+
+                    for x in 0usize..3 {
+                        for y in 0usize..3 {
+                            let (o_x, o_y) = (tile_x + x - 1, tile_y + y - 1);
+                            let frame = calculate_tile_edges(o_x, o_y, &tiles) as usize;
+                            let chunk = tiles
+                                .get_mut(&(o_x / graphics::CHUNK_SIZE, o_y / graphics::CHUNK_SIZE));
+                            if let Some(arr) = chunk {
+                                arr[o_x % graphics::CHUNK_SIZE][o_y % graphics::CHUNK_SIZE] =
+                                    (|(t, _)| (t, frame))(
+                                        arr[o_x % graphics::CHUNK_SIZE][o_y % graphics::CHUNK_SIZE],
+                                    );
+                            }
+                        }
                     }
                 }
             }
