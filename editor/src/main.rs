@@ -102,13 +102,15 @@ macro_rules! create_images {
     };
 }
 
-const SELECTIONS: [Selection; 2] = [
+const SELECTIONS: [Selection; 3] = [
+    Selection::Tile(graphics::Tile::NoTile),
     Selection::Tile(graphics::Tile::TestTile1),
     Selection::Tile(graphics::Tile::TestTile2),
 ];
 
 fn build_ui() -> impl Widget<()> {
     let png_data = create_images!(
+        "../../assets/editor/notile.png",
         "../../assets/test-tileset1.png",
         "../../assets/test-tileset2.png"
     );
