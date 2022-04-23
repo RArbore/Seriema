@@ -128,20 +128,17 @@ fn build_ui() -> impl Widget<()> {
     let save_dialog_options = FileDialogOptions::new()
         .allowed_types(vec![bin_spec])
         .default_type(bin_spec);
-    let mut top = Flex::column().with_child(Padding::new(
-        10.0,
-        Button::new("Save").on_click(move |ctx, _, _| {
-            ctx.submit_command(Command::new(
-                commands::SHOW_SAVE_PANEL,
-                save_dialog_options.clone(),
-                Target::Auto,
-            ))
-        }),
-    ));
+    let mut top = Flex::column().with_child(Button::new("Save").on_click(move |ctx, _, _| {
+        ctx.submit_command(Command::new(
+            commands::SHOW_SAVE_PANEL,
+            save_dialog_options.clone(),
+            Target::Auto,
+        ))
+    }));
     let mut i = 0;
+    let mut cur = Flex::row();
     for image in images {
-        top.add_default_spacer();
-        top.add_child(ControllerHost::new(
+        cur.add_child(ControllerHost::new(
             image,
             Click::new(move |ctx, _, _| {
                 ctx.submit_command(Command::new(
@@ -152,6 +149,13 @@ fn build_ui() -> impl Widget<()> {
             }),
         ));
         i += 1;
+        if i % 5 == 0 {
+            top.add_child(cur);
+            cur = Flex::row();
+        }
+    }
+    if i % 5 != 0 {
+        top.add_child(cur);
     }
     top
 }
@@ -209,7 +213,7 @@ fn main() {
     thread::spawn(move || {
         AppLauncher::with_window(
             WindowDesc::new(|| build_ui())
-                .window_size((400.0, 400.0))
+                .window_size((200.0, 200.0))
                 .resizable(false)
                 .title("Editor Tools"),
         )
