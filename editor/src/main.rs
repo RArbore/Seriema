@@ -81,7 +81,10 @@ fn save_scene(
     let mut adjusted_entities: Vec<ecs::EntityDesc> = Default::default();
     for entity in entities {
         let mut adjusted_entity = *entity;
-        adjusted_entity.adjust_pos(-(min.0 as f32), -(min.1 as f32));
+        adjusted_entity.adjust_pos(
+            -((min.0 * graphics::TILE_SIZE * graphics::CHUNK_SIZE) as f32),
+            -((min.1 * graphics::TILE_SIZE * graphics::CHUNK_SIZE) as f32),
+        );
         adjusted_entities.push(adjusted_entity);
     }
     let serialized = bincode::serialize(&(adjusted_tiles, adjusted_entities)).unwrap();
@@ -251,6 +254,8 @@ fn main() {
     let mut cx = 0.0;
     let mut cy = 0.0;
     let mut dc: Option<(f32, f32)> = None;
+
+    let mut last_click = (false, false, false);
     pollster::block_on(graphics::Graphics::new()).run(move |controller, _, _, _, _| {
         if let Ok(()) = rx.try_recv() {
             process::exit(0);
@@ -308,11 +313,16 @@ fn main() {
                     }
                 }
                 Selection::Entity(construct) => {
-                    let entity_x = world_x + (OFFSET * graphics::TILE_SIZE as i64) as f32;
-                    let entity_y = world_y + (OFFSET * graphics::TILE_SIZE as i64) as f32;
-                    scene.1.push(construct(entity_x, entity_y));
+                    if !last_click.0 {
+                        let entity_x = world_x + (OFFSET * graphics::TILE_SIZE as i64) as f32;
+                        let entity_y = world_y + (OFFSET * graphics::TILE_SIZE as i64) as f32;
+                        scene.1.push(construct(entity_x, entity_y));
+                    }
                 }
             }
+            last_click.0 = true;
+        } else {
+            last_click.0 = false;
         }
 
         if controller.middle_click {
@@ -333,8 +343,10 @@ fn main() {
                     -controller.cursor_y as f32 / graphics::PIXEL_SIZE as f32,
                 ));
             }
+            last_click.1 = true;
         } else {
             dc = None;
+            last_click.1 = false;
         }
 
         let mut tile_batch: graphics::TileBatch = Default::default();
