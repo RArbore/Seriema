@@ -20,21 +20,38 @@ use super::world::*;
 
 extern crate graphics;
 
-#[typetag::serde(tag = "type")]
-pub trait EntityDesc {
-    fn get_sprite(&self) -> graphics::Sprite;
-    fn construct(&self, world: &mut World);
-    fn adjust_pos(&mut self, dx: f32, dy: f32);
+#[derive(Clone, Deserialize, Serialize)]
+pub enum EntityDesc {
+    Player(PlayerDesc),
 }
 
-#[derive(Deserialize, Serialize)]
+impl EntityDesc {
+    pub fn get_sprite(&self) -> graphics::Sprite {
+        match self {
+            EntityDesc::Player(x) => x.get_sprite(),
+        }
+    }
+
+    pub fn construct(&self, world: &mut World) {
+        match self {
+            EntityDesc::Player(x) => x.construct(world),
+        }
+    }
+
+    pub fn adjust_pos(&mut self, dx: f32, dy: f32) {
+        match self {
+            EntityDesc::Player(x) => x.adjust_pos(dx, dy),
+        }
+    }
+}
+
+#[derive(Clone, Deserialize, Serialize)]
 pub struct PlayerDesc {
     pub x: f32,
     pub y: f32,
 }
 
-#[typetag::serde]
-impl EntityDesc for PlayerDesc {
+impl PlayerDesc {
     fn get_sprite(&self) -> graphics::Sprite {
         graphics::sprite::Sprite::TestSprite1
     }

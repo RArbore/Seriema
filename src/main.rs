@@ -42,7 +42,7 @@ fn main() {
             ),
     ));
 
-    let scene: (graphics::Tiles, Vec<Box<dyn ecs::EntityDesc>>) =
+    let scene: (graphics::Tiles, Vec<ecs::EntityDesc>) =
         bincode::deserialize(&std::fs::read("assets/testscene.bin").unwrap()).unwrap();
 
     world.resources.tiles = scene.0;

@@ -62,7 +62,7 @@ fn calculate_tile_edges(tile_x: usize, tile_y: usize, tiles: &graphics::Tiles) -
 
 fn save_scene(
     tiles: &graphics::Tiles,
-    entities: Vec<Box<dyn ecs::EntityDesc>>,
+    entities: Vec<ecs::EntityDesc>,
     file_path: &str,
 ) -> std::io::Result<()> {
     let mut min: (usize, usize) = (usize::MAX, usize::MAX);
@@ -78,10 +78,11 @@ fn save_scene(
     for (key, value) in tiles {
         adjusted_tiles.insert((key.0 - min.0, key.1 - min.1), value.clone());
     }
-    let mut adjusted_entities: Vec<Box<dyn ecs::EntityDesc>> = Default::default();
-    for mut entity in entities {
-        entity.adjust_pos(-(min.0 as f32), -(min.1 as f32));
-        adjusted_entities.push(entity);
+    let mut adjusted_entities: Vec<ecs::EntityDesc> = Default::default();
+    for entity in entities {
+        let mut adjusted_entity = entity;
+        adjusted_entity.adjust_pos(-(min.0 as f32), -(min.1 as f32));
+        adjusted_entities.push(adjusted_entity);
     }
     let serialized = bincode::serialize(&(adjusted_tiles, adjusted_entities)).unwrap();
     let mut file = File::create(file_path)?;
