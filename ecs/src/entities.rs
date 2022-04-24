@@ -1,0 +1,60 @@
+/*
+ * This file is part of game-testbed.
+ * game-testbed is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ * game-testbed is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURAABBE.  See the
+ * GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License
+ * along with game-testbed. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+use super::components::*;
+use super::util::*;
+use super::world::*;
+
+extern crate graphics;
+
+pub trait EntityDesc {
+    fn get_sprite() -> graphics::Sprite;
+    fn construct(&self, world: &mut World);
+}
+
+pub struct PlayerDesc {
+    pub x: f32,
+    pub y: f32,
+}
+
+impl EntityDesc for PlayerDesc {
+    fn get_sprite() -> graphics::Sprite {
+        graphics::sprite::Sprite::TestSprite1
+    }
+
+    fn construct(&self, world: &mut World) {
+        let entity = world.add();
+        world.insert(
+            entity,
+            AABB {
+                x: self.x,
+                y: self.y,
+                w: 16.0,
+                h: 16.0,
+                last: Correction::None,
+            },
+        );
+        world.insert(entity, Velocity { x: 0.0, y: 0.0 });
+        world.insert(
+            entity,
+            Sprite {
+                sprite: PlayerDesc::get_sprite(),
+                frame: 0,
+                width: 1.0,
+                height: 1.0,
+            },
+        );
+        world.insert(entity, Player { can_jump: 0.0 });
+    }
+}

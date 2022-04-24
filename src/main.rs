@@ -15,6 +15,8 @@
 extern crate ecs;
 extern crate graphics;
 
+use crate::ecs::entities::EntityDesc;
+
 fn main() {
     let mut world = ecs::World::new();
     /*
@@ -41,28 +43,8 @@ fn main() {
     }
          */
 
-    let entity = world.add();
-    world.insert(
-        entity,
-        ecs::AABB {
-            x: 32.0,
-            y: 32.0,
-            w: 16.0,
-            h: 16.0,
-            last: ecs::Correction::None,
-        },
-    );
-    world.insert(entity, ecs::Velocity { x: 0.0, y: 0.0 });
-    world.insert(
-        entity,
-        ecs::Sprite {
-            sprite: graphics::sprite::Sprite::TestSprite1,
-            frame: 0,
-            width: 1.0,
-            height: 1.0,
-        },
-    );
-    world.insert(entity, ecs::Player { can_jump: 0.0 });
+    let player_desc = ecs::PlayerDesc { x: 32.0, y: 32.0 };
+    player_desc.construct(&mut world);
 
     world.systems.push(Box::new(
         ecs::update_aabb

@@ -13,12 +13,14 @@
  */
 
 pub mod components;
+pub mod entities;
 pub mod resources;
 pub mod systems;
 pub mod util;
 pub mod world;
 
 pub use components::*;
+pub use entities::*;
 pub use resources::*;
 pub use systems::*;
 pub use util::*;
