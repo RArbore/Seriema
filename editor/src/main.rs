@@ -62,7 +62,7 @@ fn calculate_tile_edges(tile_x: usize, tile_y: usize, tiles: &graphics::Tiles) -
 
 fn save_scene(
     tiles: &graphics::Tiles,
-    entities: Vec<ecs::EntityDesc>,
+    entities: &Vec<ecs::EntityDesc>,
     file_path: &str,
 ) -> std::io::Result<()> {
     let mut min: (usize, usize) = (usize::MAX, usize::MAX);
@@ -80,7 +80,7 @@ fn save_scene(
     }
     let mut adjusted_entities: Vec<ecs::EntityDesc> = Default::default();
     for entity in entities {
-        let mut adjusted_entity = entity;
+        let mut adjusted_entity = *entity;
         adjusted_entity.adjust_pos(-(min.0 as f32), -(min.1 as f32));
         adjusted_entities.push(adjusted_entity);
     }
@@ -90,41 +90,65 @@ fn save_scene(
     Ok(())
 }
 
-macro_rules! create_images {
-    ($($x:literal),+) => {
-        [
-            $(
-                ImageBuf::from_raw(
-                    image::load_from_memory(&include_bytes!($x)[..])
-                        .unwrap()
-                        .crop_imm(
-                            4 * graphics::TILE_SIZE as u32,
-                            0,
-                            graphics::TILE_SIZE as u32,
-                            graphics::TILE_SIZE as u32,
-                        )
-                        .as_bytes(),
-                    piet::ImageFormat::RgbaSeparate,
-                    graphics::TILE_SIZE,
-                    graphics::TILE_SIZE,
+macro_rules! create_tile {
+    ($x:literal) => {
+        ImageBuf::from_raw(
+            image::load_from_memory(&include_bytes!($x)[..])
+                .unwrap()
+                .crop_imm(
+                    4 * graphics::TILE_SIZE as u32,
+                    0,
+                    graphics::TILE_SIZE as u32,
+                    graphics::TILE_SIZE as u32,
                 )
-            ),+
-        ]
+                .as_bytes(),
+            piet::ImageFormat::RgbaSeparate,
+            graphics::TILE_SIZE,
+            graphics::TILE_SIZE,
+        )
     };
 }
 
-const SELECTIONS: [Selection; 3] = [
+macro_rules! create_sprite {
+    ($x:literal, $y:expr, $z:expr) => {
+        ImageBuf::from_raw(
+            image::load_from_memory(&include_bytes!($x)[..])
+                .unwrap()
+                .crop_imm($y * $z as u32, 0, $z as u32, $z as u32)
+                .as_bytes(),
+            piet::ImageFormat::RgbaSeparate,
+            $z,
+            $z,
+        )
+    };
+}
+
+#[derive(Clone, Copy)]
+enum Selection {
+    Tile(graphics::Tile),
+    Entity(&'static (dyn Fn(f32, f32) -> ecs::EntityDesc + Sync)),
+}
+
+impl Default for Selection {
+    fn default() -> Self {
+        Selection::Tile(Default::default())
+    }
+}
+
+const SELECTIONS: [Selection; 4] = [
     Selection::Tile(graphics::Tile::NoTile),
     Selection::Tile(graphics::Tile::TestTile1),
     Selection::Tile(graphics::Tile::TestTile2),
+    Selection::Entity(&|x: f32, y: f32| ecs::EntityDesc::Player(ecs::PlayerDesc { x, y })),
 ];
 
 fn build_ui() -> impl Widget<()> {
-    let png_data = create_images!(
-        "../../assets/editor/notile.png",
-        "../../assets/test-tileset1.png",
-        "../../assets/test-tileset2.png"
-    );
+    let png_data = [
+        create_tile!("../../assets/editor/notile.png"),
+        create_tile!("../../assets/test-tileset1.png"),
+        create_tile!("../../assets/test-tileset2.png"),
+        create_sprite!("../../assets/test-sprite1.png", 0, 16),
+    ];
     let images = png_data.into_iter().map(|png| {
         SizedBox::new(
             Image::new(png)
@@ -172,7 +196,7 @@ fn build_ui() -> impl Widget<()> {
 }
 
 struct Delegate {
-    scene: Arc<Mutex<graphics::Tiles>>,
+    scene: Arc<Mutex<(graphics::Tiles, Vec<ecs::EntityDesc>)>>,
     sel: Arc<Mutex<Selection>>,
 }
 
@@ -186,11 +210,8 @@ impl AppDelegate<()> for Delegate {
         _env: &Env,
     ) -> Handled {
         if let Some(file_info) = cmd.get(commands::SAVE_FILE_AS) {
-            if let Err(e) = save_scene(
-                &self.scene.lock().unwrap(),
-                Default::default(),
-                file_info.path().to_str().unwrap(),
-            ) {
+            let scene = &self.scene.lock().unwrap();
+            if let Err(e) = save_scene(&scene.0, &scene.1, file_info.path().to_str().unwrap()) {
                 println!("Error writing file: {}", e);
             }
             Handled::Yes
@@ -204,19 +225,8 @@ impl AppDelegate<()> for Delegate {
     }
 }
 
-#[derive(Clone, Copy)]
-enum Selection {
-    Tile(graphics::Tile),
-}
-
-impl Default for Selection {
-    fn default() -> Self {
-        Selection::Tile(Default::default())
-    }
-}
-
 fn main() {
-    let scene: Arc<Mutex<graphics::Tiles>> = Default::default();
+    let scene: Arc<Mutex<(graphics::Tiles, Vec<ecs::EntityDesc>)>> = Default::default();
     let cur_selection: Arc<Mutex<Selection>> = Default::default();
     let scene_clone = Arc::clone(&scene);
     let cur_selection_clone = Arc::clone(&cur_selection);
@@ -246,7 +256,7 @@ fn main() {
             process::exit(0);
         }
 
-        let tiles: &mut graphics::Tiles = &mut scene.lock().unwrap();
+        let scene = &mut scene.lock().unwrap();
 
         if controller.left_click {
             let world_x = (controller.cursor_x as f32 / graphics::PIXEL_SIZE as f32) + cx;
@@ -260,7 +270,8 @@ fn main() {
                     let tile_y = (world_y as i64 / graphics::TILE_SIZE as i64
                         - (if world_y < 0.0 { 1 } else { 0 })
                         + OFFSET) as usize;
-                    let chunk = tiles
+                    let chunk = scene
+                        .0
                         .get_mut(&(tile_x / graphics::CHUNK_SIZE, tile_y / graphics::CHUNK_SIZE));
 
                     match chunk {
@@ -273,7 +284,7 @@ fn main() {
                                 graphics::CHUNK_SIZE] = Default::default();
                             new_chunk[tile_x % graphics::CHUNK_SIZE]
                                 [tile_y % graphics::CHUNK_SIZE] = (*tile, 0);
-                            tiles.insert(
+                            scene.0.insert(
                                 (tile_x / graphics::CHUNK_SIZE, tile_y / graphics::CHUNK_SIZE),
                                 new_chunk,
                             );
@@ -283,8 +294,9 @@ fn main() {
                     for x in 0usize..3 {
                         for y in 0usize..3 {
                             let (o_x, o_y) = (tile_x + x - 1, tile_y + y - 1);
-                            let frame = calculate_tile_edges(o_x, o_y, &tiles) as usize;
-                            let chunk = tiles
+                            let frame = calculate_tile_edges(o_x, o_y, &scene.0) as usize;
+                            let chunk = scene
+                                .0
                                 .get_mut(&(o_x / graphics::CHUNK_SIZE, o_y / graphics::CHUNK_SIZE));
                             if let Some(arr) = chunk {
                                 arr[o_x % graphics::CHUNK_SIZE][o_y % graphics::CHUNK_SIZE] =
@@ -294,6 +306,11 @@ fn main() {
                             }
                         }
                     }
+                }
+                Selection::Entity(construct) => {
+                    let entity_x = world_x + (OFFSET * graphics::TILE_SIZE as i64) as f32;
+                    let entity_y = world_y + (OFFSET * graphics::TILE_SIZE as i64) as f32;
+                    scene.1.push(construct(entity_x, entity_y));
                 }
             }
         }
@@ -321,7 +338,7 @@ fn main() {
         }
 
         let mut tile_batch: graphics::TileBatch = Default::default();
-        for (coords, data) in tiles.iter() {
+        for (coords, data) in scene.0.iter() {
             for r in 0..graphics::CHUNK_SIZE {
                 for c in 0..graphics::CHUNK_SIZE {
                     if data[r][c].0 != graphics::Tile::NoTile {
@@ -335,8 +352,19 @@ fn main() {
             }
         }
 
+        let mut sprite_batch: graphics::SpriteBatch = Default::default();
+        for entity_desc in scene.1.iter() {
+            sprite_batch[entity_desc.get_sprite() as usize].push((
+                0,
+                entity_desc.get_pos().0,
+                entity_desc.get_pos().1,
+                1.0,
+                1.0,
+            ));
+        }
+
         (
-            Default::default(),
+            sprite_batch,
             tile_batch,
             cx + (OFFSET * graphics::TILE_SIZE as i64) as f32,
             cy + (OFFSET * graphics::TILE_SIZE as i64) as f32,

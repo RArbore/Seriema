@@ -20,7 +20,7 @@ use super::world::*;
 
 extern crate graphics;
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Copy, Deserialize, Serialize)]
 pub enum EntityDesc {
     Player(PlayerDesc),
 }
@@ -38,6 +38,12 @@ impl EntityDesc {
         }
     }
 
+    pub fn get_pos(&self) -> (f32, f32) {
+        match self {
+            EntityDesc::Player(x) => x.get_pos(),
+        }
+    }
+
     pub fn adjust_pos(&mut self, dx: f32, dy: f32) {
         match self {
             EntityDesc::Player(x) => x.adjust_pos(dx, dy),
@@ -45,7 +51,7 @@ impl EntityDesc {
     }
 }
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Copy, Deserialize, Serialize)]
 pub struct PlayerDesc {
     pub x: f32,
     pub y: f32,
@@ -79,6 +85,10 @@ impl PlayerDesc {
             },
         );
         world.insert(entity, Player { can_jump: 0.0 });
+    }
+
+    pub fn get_pos(&self) -> (f32, f32) {
+        (self.x, self.y)
     }
 
     fn adjust_pos(&mut self, dx: f32, dy: f32) {
