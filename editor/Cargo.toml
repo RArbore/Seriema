@@ -9,6 +9,9 @@ serde = "1.0.136"
 bincode = "1.3.3"
 druid = "0.7.0"
 
+[dependencies.ecs]
+path = "../ecs"
+
 [dependencies.graphics]
 path = "../graphics"
 

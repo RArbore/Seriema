@@ -24,6 +24,7 @@ extern crate graphics;
 pub trait EntityDesc {
     fn get_sprite(&self) -> graphics::Sprite;
     fn construct(&self, world: &mut World);
+    fn adjust_pos(&mut self, dx: f32, dy: f32);
 }
 
 #[derive(Deserialize, Serialize)]
@@ -61,5 +62,10 @@ impl EntityDesc for PlayerDesc {
             },
         );
         world.insert(entity, Player { can_jump: 0.0 });
+    }
+
+    fn adjust_pos(&mut self, dx: f32, dy: f32) {
+        self.x += dx;
+        self.y += dy;
     }
 }

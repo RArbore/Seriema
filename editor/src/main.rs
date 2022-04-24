@@ -23,6 +23,7 @@ use std::thread;
 use druid::widget::*;
 use druid::*;
 
+extern crate ecs;
 extern crate graphics;
 
 const OFFSET: i64 = 100000 * graphics::CHUNK_SIZE as i64;
@@ -59,7 +60,11 @@ fn calculate_tile_edges(tile_x: usize, tile_y: usize, tiles: &graphics::Tiles) -
     acc
 }
 
-fn save_tiles(tiles: &graphics::Tiles, file_path: &str) -> std::io::Result<()> {
+fn save_scene(
+    tiles: &graphics::Tiles,
+    entities: Vec<Box<dyn ecs::EntityDesc>>,
+    file_path: &str,
+) -> std::io::Result<()> {
     let mut min: (usize, usize) = (usize::MAX, usize::MAX);
     for (key, _) in tiles {
         if key.0 < min.0 {
@@ -73,7 +78,12 @@ fn save_tiles(tiles: &graphics::Tiles, file_path: &str) -> std::io::Result<()> {
     for (key, value) in tiles {
         adjusted_tiles.insert((key.0 - min.0, key.1 - min.1), value.clone());
     }
-    let serialized = bincode::serialize(&adjusted_tiles).unwrap();
+    let mut adjusted_entities: Vec<Box<dyn ecs::EntityDesc>> = Default::default();
+    for mut entity in entities {
+        entity.adjust_pos(-(min.0 as f32), -(min.1 as f32));
+        adjusted_entities.push(entity);
+    }
+    let serialized = bincode::serialize(&(adjusted_tiles, adjusted_entities)).unwrap();
     let mut file = File::create(file_path)?;
     file.write(&serialized)?;
     Ok(())
@@ -175,8 +185,9 @@ impl AppDelegate<()> for Delegate {
         _env: &Env,
     ) -> Handled {
         if let Some(file_info) = cmd.get(commands::SAVE_FILE_AS) {
-            if let Err(e) = save_tiles(
+            if let Err(e) = save_scene(
                 &self.scene.lock().unwrap(),
+                Default::default(),
                 file_info.path().to_str().unwrap(),
             ) {
                 println!("Error writing file: {}", e);
