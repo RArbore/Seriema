@@ -15,36 +15,8 @@
 extern crate ecs;
 extern crate graphics;
 
-use crate::ecs::entities::EntityDesc;
-
 fn main() {
     let mut world = ecs::World::new();
-    /*
-        for i in 0..10201 {
-        let entity = world.add();
-        world.insert(
-        entity,
-        ecs::AABB {
-        x: -2000.0 + ((i / 101) as f32) * 64.0,
-        y: -2000.0 + ((i % 101) as f32) * 64.0,
-    },
-    );
-        world.insert(entity, ecs::Velocity { x: 100.0, y: 0.0 });
-        world.insert(
-        entity,
-        ecs::Sprite {
-        sprite: graphics::sprite::Sprite::TestSprite1,
-        frame: i % 2,
-        width: 4.0,
-        height: 4.0,
-    },
-    );
-        world.insert(entity, ecs::Player {});
-    }
-         */
-
-    let player_desc = ecs::PlayerDesc { x: 32.0, y: 32.0 };
-    player_desc.construct(&mut world);
 
     world.systems.push(Box::new(
         ecs::update_aabb
@@ -70,8 +42,13 @@ fn main() {
             ),
     ));
 
-    world.resources.tiles =
+    let scene: (graphics::Tiles, Vec<Box<dyn ecs::EntityDesc>>) =
         bincode::deserialize(&std::fs::read("assets/testscene.bin").unwrap()).unwrap();
+
+    world.resources.tiles = scene.0;
+    for entity in scene.1 {
+        entity.construct(&mut world);
+    }
 
     pollster::block_on(graphics::Graphics::new()).run(move |controller, p_cx, p_cy, p_ax, p_ay| {
         world.run(controller.get_game_input(p_cx, p_cy, p_ax, p_ay))

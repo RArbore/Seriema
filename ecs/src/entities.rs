@@ -12,24 +12,29 @@
  * along with game-testbed. If not, see <https://www.gnu.org/licenses/>.
  */
 
+use serde::{Deserialize, Serialize};
+
 use super::components::*;
 use super::util::*;
 use super::world::*;
 
 extern crate graphics;
 
+#[typetag::serde(tag = "type")]
 pub trait EntityDesc {
-    fn get_sprite() -> graphics::Sprite;
+    fn get_sprite(&self) -> graphics::Sprite;
     fn construct(&self, world: &mut World);
 }
 
+#[derive(Deserialize, Serialize)]
 pub struct PlayerDesc {
     pub x: f32,
     pub y: f32,
 }
 
+#[typetag::serde]
 impl EntityDesc for PlayerDesc {
-    fn get_sprite() -> graphics::Sprite {
+    fn get_sprite(&self) -> graphics::Sprite {
         graphics::sprite::Sprite::TestSprite1
     }
 
@@ -49,7 +54,7 @@ impl EntityDesc for PlayerDesc {
         world.insert(
             entity,
             Sprite {
-                sprite: PlayerDesc::get_sprite(),
+                sprite: self.get_sprite(),
                 frame: 0,
                 width: 1.0,
                 height: 1.0,
