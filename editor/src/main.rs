@@ -26,7 +26,7 @@ use druid::*;
 extern crate ecs;
 extern crate graphics;
 
-const OFFSET: i64 = 100000 * graphics::CHUNK_SIZE as i64;
+const OFFSET: i64 = 100 * graphics::CHUNK_SIZE as i64;
 
 const EDGE_OFFSETS: [(usize, usize); 8] = [
     (0, 1),
