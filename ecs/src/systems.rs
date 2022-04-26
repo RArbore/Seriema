@@ -126,11 +126,25 @@ pub fn update_aabb(
         }
     }
     match aabb.last {
-        Correction::Left | Correction::Right => {
-            vel.x = 0.0;
+        Correction::Left => {
+            if vel.x < 0.0 {
+                vel.x = 0.0;
+            }
         }
-        Correction::Up | Correction::Down => {
-            vel.y = 0.0;
+        Correction::Right => {
+            if vel.x > 0.0 {
+                vel.x = 0.0;
+            }
+        }
+        Correction::Up => {
+            if vel.y < 0.0 {
+                vel.y = 0.0;
+            }
+        }
+        Correction::Down => {
+            if vel.y > 0.0 {
+                vel.y = 0.0;
+            }
         }
         _ => {}
     }
