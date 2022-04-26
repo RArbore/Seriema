@@ -430,8 +430,10 @@ impl Context {
                     .map(|(version, x, y)| super::sprite::Instance {
                         texoffset: *version as f32 / NUM_TILE_VERSIONS as f32,
                         texwidth: 1.0 / NUM_TILE_VERSIONS as f32,
-                        x: ((*x * PIXEL_SIZE + PIXEL_SIZE / 2) * TILE_SIZE) as f32,
-                        y: ((*y * PIXEL_SIZE + PIXEL_SIZE / 2) * TILE_SIZE) as f32,
+                        x: ((*x * PIXEL_SIZE as i64 + PIXEL_SIZE as i64 / 2) * TILE_SIZE as i64)
+                            as f32,
+                        y: ((*y * PIXEL_SIZE as i64 + PIXEL_SIZE as i64 / 2) * TILE_SIZE as i64)
+                            as f32,
                         w: (self.textures[0].dimensions.0 as usize * PIXEL_SIZE) as f32
                             / NUM_TILE_VERSIONS as f32,
                         h: (self.textures[0].dimensions.1 as usize * PIXEL_SIZE) as f32,

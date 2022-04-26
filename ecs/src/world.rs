@@ -65,7 +65,7 @@ impl World {
                 game_input: graphics::GameInput::new(),
                 camera: (0.0, 0.0),
                 control_point: (0.0, 0.0),
-                tiles: HashMap::new(),
+                tiles: graphics::Tiles(HashMap::new()),
             },
         }
     }
@@ -112,14 +112,14 @@ impl World {
         }
 
         let mut tile_batch: graphics::TileBatch = Default::default();
-        for (coords, data) in self.resources.tiles.iter() {
+        for (coords, data) in self.resources.tiles.0.iter() {
             for r in 0..graphics::CHUNK_SIZE {
                 for c in 0..graphics::CHUNK_SIZE {
                     if data[r][c].0 != graphics::Tile::NoTile {
                         tile_batch[data[r][c].0 as usize].push((
                             data[r][c].1,
-                            coords.0 * graphics::CHUNK_SIZE + r,
-                            coords.1 * graphics::CHUNK_SIZE + c,
+                            coords.0 * graphics::CHUNK_SIZE as i64 + r as i64,
+                            coords.1 * graphics::CHUNK_SIZE as i64 + c as i64,
                         ));
                     }
                 }

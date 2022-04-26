@@ -80,11 +80,10 @@ pub fn update_aabb(
     aabb.x += vel.x * timer.dt();
     aabb.y += vel.y * timer.dt();
     aabb.last = Correction::None;
-    let mut tiles_to_check = get_all_tiles_in_aabb(aabb, tiles);
-    tiles_to_check.push((graphics::Tile::NoTile, 0, 0));
+    let tiles_to_check = get_all_tiles_in_aabb(aabb, tiles);
 
     let mut last_area: f32 = 0.0;
-    let mut run_info: Option<(usize, usize, usize, usize)> = None;
+    let mut run_info: Option<(i64, i64, i64, i64)> = None;
 
     for (tile_id, ux, uy) in tiles_to_check {
         match run_info {
@@ -109,7 +108,7 @@ pub fn update_aabb(
                                 + graphics::TILE_SIZE as f32)
                                 / 2.0,
                             w: graphics::TILE_SIZE as f32,
-                            h: ((ey - sy + 1) * graphics::TILE_SIZE) as f32,
+                            h: ((ey - sy + 1) * graphics::TILE_SIZE as i64) as f32,
                             last: Correction::None,
                         },
                     );

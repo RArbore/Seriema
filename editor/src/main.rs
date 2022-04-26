@@ -26,33 +26,28 @@ use druid::*;
 extern crate ecs;
 extern crate graphics;
 
-const OFFSET: i64 = 100 * graphics::CHUNK_SIZE as i64;
-
-const EDGE_OFFSETS: [(usize, usize); 8] = [
+const EDGE_OFFSETS: [(i64, i64); 8] = [
+    (-1, 0),
+    (-1, 1),
     (0, 1),
-    (0, 2),
-    (1, 2),
-    (2, 2),
-    (2, 1),
-    (2, 0),
+    (1, 1),
     (1, 0),
-    (0, 0),
+    (1, -1),
+    (0, -1),
+    (-1, -1),
 ];
 
-fn calculate_tile_edges(tile_x: usize, tile_y: usize, tiles: &graphics::Tiles) -> u8 {
-    let chunk = tiles.get(&(tile_x / graphics::CHUNK_SIZE, tile_y / graphics::CHUNK_SIZE));
-    let tile = match chunk {
-        Some(arr) => arr[tile_x % graphics::CHUNK_SIZE][tile_y % graphics::CHUNK_SIZE].0,
+fn calculate_tile_edges(tile_x: i64, tile_y: i64, tiles: &graphics::Tiles) -> u8 {
+    let tile = match tiles.at(tile_x, tile_y) {
+        Some(x) => x.0,
         None => graphics::Tile::NoTile,
     };
 
     let mut acc: u8 = 0;
     for i in 0..8 {
         let (o_x, o_y) = EDGE_OFFSETS[i];
-        let (o_x, o_y) = (o_x + tile_x - 1, o_y + tile_y - 1);
-        let chunk = tiles.get(&(o_x / graphics::CHUNK_SIZE, o_y / graphics::CHUNK_SIZE));
-        let o_tile = match chunk {
-            Some(arr) => arr[o_x % graphics::CHUNK_SIZE][o_y % graphics::CHUNK_SIZE].0,
+        let o_tile = match tiles.at(o_x + tile_x, o_y + tile_y) {
+            Some(x) => x.0,
             None => graphics::Tile::NoTile,
         };
         acc |= ((o_tile == tile) as u8) << i;
@@ -65,29 +60,7 @@ fn save_scene(
     entities: &Vec<ecs::EntityDesc>,
     file_path: &str,
 ) -> std::io::Result<()> {
-    let mut min: (usize, usize) = (usize::MAX, usize::MAX);
-    for (key, _) in tiles {
-        if key.0 < min.0 {
-            min.0 = key.0;
-        }
-        if key.1 < min.1 {
-            min.1 = key.1;
-        }
-    }
-    let mut adjusted_tiles: graphics::Tiles = Default::default();
-    for (key, value) in tiles {
-        adjusted_tiles.insert((key.0 - min.0, key.1 - min.1), value.clone());
-    }
-    let mut adjusted_entities: Vec<ecs::EntityDesc> = Default::default();
-    for entity in entities {
-        let mut adjusted_entity = *entity;
-        adjusted_entity.adjust_pos(
-            -((min.0 * graphics::TILE_SIZE * graphics::CHUNK_SIZE) as f32),
-            -((min.1 * graphics::TILE_SIZE * graphics::CHUNK_SIZE) as f32),
-        );
-        adjusted_entities.push(adjusted_entity);
-    }
-    let serialized = bincode::serialize(&(adjusted_tiles, adjusted_entities)).unwrap();
+    let serialized = bincode::serialize(&(tiles, entities)).unwrap();
     let mut file = File::create(file_path)?;
     file.write(&serialized)?;
     Ok(())
@@ -269,54 +242,20 @@ fn main() {
             let selection: &Selection = &cur_selection.lock().unwrap();
             match selection {
                 Selection::Tile(tile) => {
-                    let tile_x = (world_x as i64 / graphics::TILE_SIZE as i64
-                        - (if world_x < 0.0 { 1 } else { 0 })
-                        + OFFSET) as usize;
-                    let tile_y = (world_y as i64 / graphics::TILE_SIZE as i64
-                        - (if world_y < 0.0 { 1 } else { 0 })
-                        + OFFSET) as usize;
-                    let chunk = scene
-                        .0
-                        .get_mut(&(tile_x / graphics::CHUNK_SIZE, tile_y / graphics::CHUNK_SIZE));
-
-                    match chunk {
-                        Some(arr) => {
-                            arr[tile_x % graphics::CHUNK_SIZE][tile_y % graphics::CHUNK_SIZE] =
-                                (*tile, 0);
-                        }
-                        None => {
-                            let mut new_chunk: [[(graphics::Tile, usize); graphics::CHUNK_SIZE];
-                                graphics::CHUNK_SIZE] = Default::default();
-                            new_chunk[tile_x % graphics::CHUNK_SIZE]
-                                [tile_y % graphics::CHUNK_SIZE] = (*tile, 0);
-                            scene.0.insert(
-                                (tile_x / graphics::CHUNK_SIZE, tile_y / graphics::CHUNK_SIZE),
-                                new_chunk,
-                            );
-                        }
-                    }
-
-                    for x in 0usize..3 {
-                        for y in 0usize..3 {
-                            let (o_x, o_y) = (tile_x + x - 1, tile_y + y - 1);
+                    let tile_x = (world_x as i64).div_euclid(graphics::TILE_SIZE as i64);
+                    let tile_y = (world_y as i64).div_euclid(graphics::TILE_SIZE as i64);
+                    *scene.0.get_mut(tile_x, tile_y) = (*tile, 0);
+                    for x in -1..=1 {
+                        for y in -1..=1 {
+                            let (o_x, o_y) = (tile_x + x, tile_y + y);
                             let frame = calculate_tile_edges(o_x, o_y, &scene.0) as usize;
-                            let chunk = scene
-                                .0
-                                .get_mut(&(o_x / graphics::CHUNK_SIZE, o_y / graphics::CHUNK_SIZE));
-                            if let Some(arr) = chunk {
-                                arr[o_x % graphics::CHUNK_SIZE][o_y % graphics::CHUNK_SIZE] =
-                                    (|(t, _)| (t, frame))(
-                                        arr[o_x % graphics::CHUNK_SIZE][o_y % graphics::CHUNK_SIZE],
-                                    );
-                            }
+                            scene.0.get_mut(o_x, o_y).1 = frame;
                         }
                     }
                 }
                 Selection::Entity(construct) => {
                     if !last_click.0 {
-                        let entity_x = world_x + (OFFSET * graphics::TILE_SIZE as i64) as f32;
-                        let entity_y = world_y + (OFFSET * graphics::TILE_SIZE as i64) as f32;
-                        scene.1.push(construct(entity_x, entity_y));
+                        scene.1.push(construct(world_x, world_y));
                     }
                 }
             }
@@ -350,14 +289,14 @@ fn main() {
         }
 
         let mut tile_batch: graphics::TileBatch = Default::default();
-        for (coords, data) in scene.0.iter() {
+        for (coords, data) in scene.0 .0.iter() {
             for r in 0..graphics::CHUNK_SIZE {
                 for c in 0..graphics::CHUNK_SIZE {
                     if data[r][c].0 != graphics::Tile::NoTile {
                         tile_batch[data[r][c].0 as usize].push((
                             data[r][c].1,
-                            coords.0 * graphics::CHUNK_SIZE + r,
-                            coords.1 * graphics::CHUNK_SIZE + c,
+                            coords.0 * graphics::CHUNK_SIZE as i64 + r as i64,
+                            coords.1 * graphics::CHUNK_SIZE as i64 + c as i64,
                         ));
                     }
                 }
@@ -375,13 +314,6 @@ fn main() {
             ));
         }
 
-        (
-            sprite_batch,
-            tile_batch,
-            cx + (OFFSET * graphics::TILE_SIZE as i64) as f32,
-            cy + (OFFSET * graphics::TILE_SIZE as i64) as f32,
-            0.0,
-            0.0,
-        )
+        (sprite_batch, tile_batch, cx, cy, 0.0, 0.0)
     });
 }
