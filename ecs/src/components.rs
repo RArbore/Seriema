@@ -55,6 +55,8 @@ pub struct Sprite {
     pub frame: usize,
     pub width: f32,
     pub height: f32,
+    pub off_x: f32,
+    pub off_y: f32,
 }
 
 impl Component for Sprite {

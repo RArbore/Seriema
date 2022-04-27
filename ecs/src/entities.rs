@@ -68,8 +68,8 @@ impl PlayerDesc {
             AABB {
                 x: self.x,
                 y: self.y,
-                w: 16.0,
-                h: 16.0,
+                w: 15.0,
+                h: 15.0,
                 last: 0,
             },
         );
@@ -81,6 +81,8 @@ impl PlayerDesc {
                 frame: 0,
                 width: 1.0,
                 height: 1.0,
+                off_x: 0.0,
+                off_y: 0.5,
             },
         );
         world.insert(entity, Player { can_jump: 0.0 });

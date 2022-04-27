@@ -141,8 +141,8 @@ pub fn render_sprite(sprite_batch: &mut SpriteBatchRes, aabb: &mut AABB, sprite:
     sprite_batch.insert(
         sprite.sprite,
         sprite.frame,
-        aabb.x,
-        aabb.y,
+        aabb.x + sprite.off_x,
+        aabb.y + sprite.off_y,
         sprite.width,
         sprite.height,
     );
