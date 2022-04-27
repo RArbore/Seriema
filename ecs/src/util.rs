@@ -26,6 +26,8 @@ pub enum Correction {
     Down = 8,
 }
 
+const SMALL_POS: f32 = 0.00001;
+
 pub fn collides(aabb1: &AABB, aabb2: &AABB) -> bool {
     2.0 * (aabb1.x - aabb2.x).abs() <= aabb1.w + aabb2.w
         && 2.0 * (aabb1.y - aabb2.y).abs() <= aabb1.h + aabb2.h
@@ -101,7 +103,9 @@ pub fn correct_collision(aabb1_after: &mut AABB, aabb2: &mut AABB, vel1: (f32, f
         && (!down_collides || time_to_left_coll < time_to_down_coll)
     {
         *aabb1_after = AABB {
-            x: aabb1_after.x.max(aabb1.x + vel1.0 * time_to_left_coll),
+            x: aabb1_after
+                .x
+                .max(aabb1.x + vel1.0 * time_to_left_coll + SMALL_POS),
             y: aabb1_after.y,
             w: aabb1.w,
             h: aabb1.h,
@@ -113,7 +117,9 @@ pub fn correct_collision(aabb1_after: &mut AABB, aabb2: &mut AABB, vel1: (f32, f
         && (!down_collides || time_to_right_coll < time_to_down_coll)
     {
         *aabb1_after = AABB {
-            x: aabb1_after.x.min(aabb1.x + vel1.0 * time_to_right_coll),
+            x: aabb1_after
+                .x
+                .min(aabb1.x + vel1.0 * time_to_right_coll - SMALL_POS),
             y: aabb1_after.y,
             w: aabb1.w,
             h: aabb1.h,
@@ -126,7 +132,9 @@ pub fn correct_collision(aabb1_after: &mut AABB, aabb2: &mut AABB, vel1: (f32, f
     {
         *aabb1_after = AABB {
             x: aabb1_after.x,
-            y: aabb1_after.y.max(aabb1.y + vel1.1 * time_to_up_coll),
+            y: aabb1_after
+                .y
+                .max(aabb1.y + vel1.1 * time_to_up_coll + SMALL_POS),
             w: aabb1.w,
             h: aabb1.h,
             last: aabb1_after.last | Correction::Up as u8,
@@ -138,7 +146,9 @@ pub fn correct_collision(aabb1_after: &mut AABB, aabb2: &mut AABB, vel1: (f32, f
     {
         *aabb1_after = AABB {
             x: aabb1_after.x,
-            y: aabb1_after.y.min(aabb1.y + vel1.1 * time_to_down_coll),
+            y: aabb1_after
+                .y
+                .min(aabb1.y + vel1.1 * time_to_down_coll - SMALL_POS),
             w: aabb1.w,
             h: aabb1.h,
             last: aabb1_after.last | Correction::Down as u8,
