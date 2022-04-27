@@ -12,7 +12,6 @@
  * along with game-testbed. If not, see <https://www.gnu.org/licenses/>.
  */
 
-use super::util::*;
 use super::world::*;
 
 extern crate graphics;
@@ -29,7 +28,7 @@ pub struct AABB {
     pub y: f32,
     pub w: f32,
     pub h: f32,
-    pub last: Correction,
+    pub last: u8,
 }
 
 impl Component for AABB {

@@ -15,7 +15,6 @@
 use serde::{Deserialize, Serialize};
 
 use super::components::*;
-use super::util::*;
 use super::world::*;
 
 extern crate graphics;
@@ -71,7 +70,7 @@ impl PlayerDesc {
                 y: self.y,
                 w: 16.0,
                 h: 16.0,
-                last: Correction::None,
+                last: 0,
             },
         );
         world.insert(entity, Velocity { x: 0.0, y: 0.0 });

@@ -79,10 +79,9 @@ pub fn update_aabb(
 ) {
     aabb.x += vel.x * timer.dt();
     aabb.y += vel.y * timer.dt();
-    aabb.last = Correction::None;
+    aabb.last = 0;
     let tiles_to_check = get_all_tiles_in_aabb(aabb, tiles);
 
-    let mut last_area: f32 = 0.0;
     let mut run_info: Option<(i64, i64, i64, i64)> = None;
 
     for (tile_id, ux, uy) in tiles_to_check {
@@ -98,7 +97,7 @@ pub fn update_aabb(
                 if tile_id != graphics::Tile::NoTile && ux == sx {
                     run_info = Some((sx, sy, ux, uy));
                 } else {
-                    let (correction, area) = correct_collision(
+                    correct_collision(
                         aabb,
                         &mut AABB {
                             x: ((ex + sx) as f32 * graphics::TILE_SIZE as f32
@@ -109,13 +108,11 @@ pub fn update_aabb(
                                 / 2.0,
                             w: graphics::TILE_SIZE as f32,
                             h: ((ey - sy + 1) * graphics::TILE_SIZE as i64) as f32,
-                            last: Correction::None,
+                            last: 0,
                         },
+                        (vel.x, vel.y),
+                        timer.dt(),
                     );
-                    if correction != Correction::None && area > last_area {
-                        aabb.last = correction;
-                        last_area = area;
-                    }
                     if tile_id != graphics::Tile::NoTile {
                         run_info = Some((ux, uy, ux, uy));
                     } else {
@@ -125,28 +122,17 @@ pub fn update_aabb(
             }
         }
     }
-    match aabb.last {
-        Correction::Left => {
-            if vel.x < 0.0 {
-                vel.x = 0.0;
-            }
-        }
-        Correction::Right => {
-            if vel.x > 0.0 {
-                vel.x = 0.0;
-            }
-        }
-        Correction::Up => {
-            if vel.y < 0.0 {
-                vel.y = 0.0;
-            }
-        }
-        Correction::Down => {
-            if vel.y > 0.0 {
-                vel.y = 0.0;
-            }
-        }
-        _ => {}
+    if aabb.last & Correction::Left as u8 != 0 && vel.x < 0.0 {
+        vel.x = 0.0;
+    }
+    if aabb.last & Correction::Right as u8 != 0 && vel.x > 0.0 {
+        vel.x = 0.0;
+    }
+    if aabb.last & Correction::Up as u8 != 0 && vel.y < 0.0 {
+        vel.y = 0.0;
+    }
+    if aabb.last & Correction::Down as u8 != 0 && vel.y > 0.0 {
+        vel.y = 0.0;
     }
 }
 
@@ -182,14 +168,14 @@ pub fn player_system(
     sprite: &mut Sprite,
     player: &mut Player,
 ) {
-    if aabb.last == Correction::Up {
+    if aabb.last & Correction::Up as u8 != 0 {
         player.can_jump = 0.1;
     } else if player.can_jump > 0.0 {
         player.can_jump -= timer.dt();
     } else {
         player.can_jump = 0.0;
     }
-    vel.y -= (if game_input.crouch { 400.0 } else { 200.0 }) * timer.dt();
+    vel.y -= (if game_input.crouch { 400.0 } else { 5.0 }) * timer.dt();
     vel.x = 0.0;
     if game_input.left {
         vel.x += -100.0;
