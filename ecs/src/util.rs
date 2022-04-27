@@ -26,8 +26,6 @@ pub enum Correction {
     Down = 8,
 }
 
-const SMALL_DT: f32 = 0.0000001;
-
 pub fn collides(aabb1: &AABB, aabb2: &AABB) -> bool {
     2.0 * (aabb1.x - aabb2.x).abs() <= aabb1.w + aabb2.w
         && 2.0 * (aabb1.y - aabb2.y).abs() <= aabb1.h + aabb2.h
@@ -46,8 +44,8 @@ pub fn correct_collision(aabb1_after: &mut AABB, aabb2: &mut AABB, vel1: (f32, f
     let time_to_up_coll = (aabb2.y - aabb1.y + (aabb1.h + aabb2.h) / 2.0) / vel1.1;
     let time_to_down_coll = (aabb2.y - aabb1.y - (aabb1.h + aabb2.h) / 2.0) / vel1.1;
     let left_collides = vel1.0 != 0.0
-        && time_to_left_coll + SMALL_DT > 0.0
-        && time_to_left_coll - SMALL_DT <= dt
+        && time_to_left_coll >= 0.0
+        && time_to_left_coll <= dt
         && collides(
             &AABB {
                 x: aabb1_after.x.max(aabb1.x + vel1.0 * time_to_left_coll),
@@ -59,8 +57,8 @@ pub fn correct_collision(aabb1_after: &mut AABB, aabb2: &mut AABB, vel1: (f32, f
             aabb2,
         );
     let right_collides = vel1.0 != 0.0
-        && time_to_right_coll + SMALL_DT > 0.0
-        && time_to_right_coll - SMALL_DT <= dt
+        && time_to_right_coll >= 0.0
+        && time_to_right_coll <= dt
         && collides(
             &AABB {
                 x: aabb1_after.x.min(aabb1.x + vel1.0 * time_to_right_coll),
@@ -72,8 +70,8 @@ pub fn correct_collision(aabb1_after: &mut AABB, aabb2: &mut AABB, vel1: (f32, f
             aabb2,
         );
     let up_collides = vel1.1 != 0.0
-        && time_to_up_coll + SMALL_DT > 0.0
-        && time_to_up_coll - SMALL_DT <= dt
+        && time_to_up_coll >= 0.0
+        && time_to_up_coll <= dt
         && collides(
             &AABB {
                 x: aabb1_after.x,
@@ -85,8 +83,8 @@ pub fn correct_collision(aabb1_after: &mut AABB, aabb2: &mut AABB, vel1: (f32, f
             aabb2,
         );
     let down_collides = vel1.1 != 0.0
-        && time_to_down_coll + SMALL_DT > 0.0
-        && time_to_down_coll - SMALL_DT <= dt
+        && time_to_down_coll >= 0.0
+        && time_to_down_coll <= dt
         && collides(
             &AABB {
                 x: aabb1_after.x,
@@ -161,8 +159,8 @@ pub fn get_all_tiles_in_aabb(
         ((aabb.x + aabb.w / 2.0) as i64 + graphics::TILE_SIZE as i64) / graphics::TILE_SIZE as i64;
     let max_j: i64 =
         ((aabb.y + aabb.h / 2.0) as i64 + graphics::TILE_SIZE as i64) / graphics::TILE_SIZE as i64;
-    for i in min_i..=max_i {
-        for j in min_j..=max_j {
+    for j in min_j..=max_j {
+        for i in min_i..=max_i {
             if let Some((tile, _)) = tiles.at(i, j) {
                 vec.push((*tile, i, j));
             }

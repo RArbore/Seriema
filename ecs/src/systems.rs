@@ -94,7 +94,7 @@ pub fn update_aabb(
                 }
             }
             Some((sx, sy, ex, ey)) => {
-                if tile_id != graphics::Tile::NoTile && ux == sx {
+                if tile_id != graphics::Tile::NoTile && uy == sy {
                     run_info = Some((sx, sy, ux, uy));
                 } else {
                     correct_collision(
@@ -106,8 +106,8 @@ pub fn update_aabb(
                             y: ((ey + sy) as f32 * graphics::TILE_SIZE as f32
                                 + graphics::TILE_SIZE as f32)
                                 / 2.0,
-                            w: graphics::TILE_SIZE as f32,
-                            h: ((ey - sy + 1) * graphics::TILE_SIZE as i64) as f32,
+                            w: ((ex - sx + 1) * graphics::TILE_SIZE as i64) as f32,
+                            h: graphics::TILE_SIZE as f32,
                             last: 0,
                         },
                         (vel.x, vel.y),
@@ -175,7 +175,7 @@ pub fn player_system(
     } else {
         player.can_jump = 0.0;
     }
-    vel.y -= (if game_input.crouch { 400.0 } else { 5.0 }) * timer.dt();
+    vel.y -= (if game_input.crouch { 400.0 } else { 200.0 }) * timer.dt();
     vel.x = 0.0;
     if game_input.left {
         vel.x += -100.0;
