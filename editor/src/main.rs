@@ -139,13 +139,24 @@ fn build_ui() -> impl Widget<()> {
     let save_dialog_options = FileDialogOptions::new()
         .allowed_types(vec![bin_spec])
         .default_type(bin_spec);
-    let mut top = Flex::column().with_child(Button::new("Save").on_click(move |ctx, _, _| {
-        ctx.submit_command(Command::new(
-            commands::SHOW_SAVE_PANEL,
-            save_dialog_options.clone(),
-            Target::Auto,
-        ))
-    }));
+    let load_dialog_options = FileDialogOptions::new()
+        .allowed_types(vec![bin_spec])
+        .default_type(bin_spec);
+    let mut top = Flex::column()
+        .with_child(Button::new("Save").on_click(move |ctx, _, _| {
+            ctx.submit_command(Command::new(
+                commands::SHOW_SAVE_PANEL,
+                save_dialog_options.clone(),
+                Target::Auto,
+            ))
+        }))
+        .with_child(Button::new("Load").on_click(move |ctx, _, _| {
+            ctx.submit_command(Command::new(
+                commands::SHOW_OPEN_PANEL,
+                load_dialog_options.clone(),
+                Target::Auto,
+            ))
+        }));
     let mut i = 0;
     let mut cur = Flex::row();
     for image in images {
@@ -189,6 +200,19 @@ impl AppDelegate<()> for Delegate {
             let scene = &self.scene.lock().unwrap();
             if let Err(e) = save_scene(&scene.0, &scene.1, file_info.path().to_str().unwrap()) {
                 println!("Error writing file: {}", e);
+            }
+            Handled::Yes
+        } else if let Some(file_info) = cmd.get(commands::OPEN_FILE) {
+            match std::fs::read(file_info.path()) {
+                Ok(s) => {
+                    let new_scene =
+                        bincode::deserialize::<(graphics::Tiles, Vec<ecs::EntityDesc>)>(s.as_ref())
+                            .unwrap();
+                    *self.scene.lock().unwrap() = new_scene;
+                }
+                Err(e) => {
+                    println!("Error opening file: {}", e);
+                }
             }
             Handled::Yes
         } else if let Some(selection) = cmd.get::<Selection>(Selector::new("update_sel")) {
